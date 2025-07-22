@@ -2,6 +2,7 @@
 export type SafetyRating = 'safe' | 'caution' | 'avoid';
 
 import AIAnalysisService from './aiAnalysisService';
+import PersonalizationService from './personalizationService';
 
 export interface IngredientInfo {
   id: string;
@@ -194,41 +195,27 @@ class IngredientService {
       const aiAnalysis = await AIAnalysisService.analyzeIngredientsBatch(ingredients);
       
       const analyses: IngredientAnalysis[] = [];
-      let safeCount = 0;
-      let cautionCount = 0;
-      let avoidCount = 0;
 
       for (let i = 0; i < ingredients.length; i++) {
         const ingredient = ingredients[i];
         const aiIngredientAnalysis = aiAnalysis.ingredients[i];
         const analysis = await this.analyzeIngredient(ingredient, i + 1, aiIngredientAnalysis);
         analyses.push(analysis);
-
-        // Count ratings for summary
-        switch (analysis.rating) {
-          case 'safe':
-            safeCount++;
-            break;
-          case 'caution':
-            cautionCount++;
-            break;
-          case 'avoid':
-            avoidCount++;
-            break;
-        }
       }
 
-      // Calculate overall safety score (0-100)
-      const totalIngredients = ingredients.length;
-      const overallSafetyScore = Math.round(
-        ((safeCount * 100) + (cautionCount * 60) + (avoidCount * 20)) / totalIngredients
-      );
+      // Apply personalization to the analysis
+      const personalizedResult = await PersonalizationService.personalizeAnalysis(analyses);
+      
+      // Count personalized ratings for summary
+      const safeCount = personalizedResult.ingredients.filter(i => i.rating === 'safe').length;
+      const cautionCount = personalizedResult.ingredients.filter(i => i.rating === 'caution').length;
+      const avoidCount = personalizedResult.ingredients.filter(i => i.rating === 'avoid').length;
 
       const processingTime = Date.now() - startTime;
 
       return {
-        ingredients: analyses,
-        overallSafetyScore,
+        ingredients: personalizedResult.ingredients,
+        overallSafetyScore: personalizedResult.personalizedScore,
         processingTime,
         summary: {
           safe: safeCount,

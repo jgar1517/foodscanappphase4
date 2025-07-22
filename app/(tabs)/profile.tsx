@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -6,38 +7,85 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, Heart, Shield, Star, FileText, CircleHelp as HelpCircle, ChevronRight, Zap, Calendar, ChartBar as BarChart3 } from 'lucide-react-native';
-
-const dietaryOptions = [
-  { id: 'gluten-free', label: 'Gluten-Free', active: true },
-  { id: 'vegan', label: 'Vegan', active: false },
-  { id: 'vegetarian', label: 'Vegetarian', active: false },
-  { id: 'diabetic', label: 'Diabetic-Friendly', active: true },
-  { id: 'keto', label: 'Keto', active: false },
-  { id: 'paleo', label: 'Paleo', active: false },
-  { id: 'low-sodium', label: 'Low Sodium', active: false },
-  { id: 'dairy-free', label: 'Dairy-Free', active: false },
-];
-
-const customAvoidances = [
-  'Artificial colors',
-  'High fructose corn syrup',
-  'Sodium benzoate',
-];
+import { Settings, Heart, Shield, Star, FileText, CircleHelp as HelpCircle, ChevronRight, Zap, Calendar, ChartBar as BarChart3, Plus, X } from 'lucide-react-native';
+import DietaryProfileService, { DietaryPreference, CustomIngredientAvoidance } from '@/services/dietaryProfileService';
 
 export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [dietaryPreferences, setDietaryPreferences] = useState(dietaryOptions);
+  const [dietaryPreferences, setDietaryPreferences] = useState<DietaryPreference[]>([]);
+  const [customAvoidances, setCustomAvoidances] = useState<CustomIngredientAvoidance[]>([]);
+  const [showAddIngredient, setShowAddIngredient] = useState(false);
+  const [newIngredientName, setNewIngredientName] = useState('');
+  const [newIngredientReason, setNewIngredientReason] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Load dietary profile when screen focuses
+  useFocusEffect(
+    React.useCallback(() => {
+      loadDietaryProfile();
+    }, [])
+  );
+
+  const loadDietaryProfile = async () => {
+    try {
+      setLoading(true);
+      const profile = await DietaryProfileService.getDietaryProfile();
+      setDietaryPreferences(profile.preferences);
+      setCustomAvoidances(profile.customAvoidances);
+    } catch (error) {
+      console.error('Failed to load dietary profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleDietaryPreference = (id: string) => {
-    setDietaryPreferences(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, active: !item.active } : item
-      )
+    const updatedPreferences = dietaryPreferences.map(item =>
+      item.id === id ? { ...item, isActive: !item.isActive } : item
     );
+    setDietaryPreferences(updatedPreferences);
+    
+    // Save to storage
+    DietaryProfileService.updateDietaryPreferences(updatedPreferences);
+  };
+
+  const addCustomIngredient = async () => {
+    if (!newIngredientName.trim()) {
+      Alert.alert('Error', 'Please enter an ingredient name');
+      return;
+    }
+
+    try {
+      await DietaryProfileService.addCustomAvoidance(
+        newIngredientName.trim(),
+        newIngredientReason.trim() || 'Personal preference',
+        'avoid'
+      );
+      
+      // Reload profile
+      await loadDietaryProfile();
+      
+      // Reset form
+      setNewIngredientName('');
+      setNewIngredientReason('');
+      setShowAddIngredient(false);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add custom ingredient');
+    }
+  };
+
+  const removeCustomIngredient = async (avoidanceId: string) => {
+    try {
+      await DietaryProfileService.removeCustomAvoidance(avoidanceId);
+      await loadDietaryProfile();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to remove custom ingredient');
+    }
   };
 
   const MenuSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -91,20 +139,26 @@ export default function ProfileScreen() {
 
         {/* Dietary Preferences */}
         <MenuSection title="Dietary Preferences">
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Loading preferences...</Text>
+            </View>
+          ) : (
+            <>
           <View style={styles.dietaryGrid}>
             {dietaryPreferences.map((preference) => (
               <TouchableOpacity
                 key={preference.id}
                 style={[
                   styles.dietaryChip,
-                  preference.active && styles.dietaryChipActive,
+                  preference.isActive && styles.dietaryChipActive,
                 ]}
                 onPress={() => toggleDietaryPreference(preference.id)}
               >
                 <Text
                   style={[
                     styles.dietaryChipText,
-                    preference.active && styles.dietaryChipTextActive,
+                    preference.isActive && styles.dietaryChipTextActive,
                   ]}
                 >
                   {preference.label}
@@ -115,15 +169,67 @@ export default function ProfileScreen() {
           
           <View style={styles.customAvoidances}>
             <Text style={styles.customAvoidancesTitle}>Custom Ingredients to Avoid:</Text>
-            {customAvoidances.map((item, index) => (
-              <View key={index} style={styles.avoidanceItem}>
-                <Text style={styles.avoidanceText}>• {item}</Text>
+            {customAvoidances.map((avoidance) => (
+              <View key={avoidance.id} style={styles.avoidanceItem}>
+                <View style={styles.avoidanceContent}>
+                  <Text style={styles.avoidanceText}>• {avoidance.ingredientName}</Text>
+                  {avoidance.reason && (
+                    <Text style={styles.avoidanceReason}>({avoidance.reason})</Text>
+                  )}
+                </View>
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeCustomIngredient(avoidance.id)}
+                >
+                  <X size={16} color="#ef4444" />
+                </TouchableOpacity>
               </View>
             ))}
-            <TouchableOpacity style={styles.addAvoidanceButton}>
-              <Text style={styles.addAvoidanceText}>+ Add Custom Ingredient</Text>
+            
+            {showAddIngredient ? (
+              <View style={styles.addIngredientForm}>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Ingredient name"
+                  value={newIngredientName}
+                  onChangeText={setNewIngredientName}
+                />
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Reason (optional)"
+                  value={newIngredientReason}
+                  onChangeText={setNewIngredientReason}
+                />
+                <View style={styles.formButtons}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => {
+                      setShowAddIngredient(false);
+                      setNewIngredientName('');
+                      setNewIngredientReason('');
+                    }}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={addCustomIngredient}
+                  >
+                    <Text style={styles.saveButtonText}>Add</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.addAvoidanceButton}
+                onPress={() => setShowAddIngredient(true)}
+              >
+                <Plus size={16} color="#10b981" />
+                <Text style={styles.addAvoidanceText}>Add Custom Ingredient</Text>
             </TouchableOpacity>
+            )}
           </View>
+            )}
         </MenuSection>
 
         {/* Account Settings */}
@@ -339,19 +445,92 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   avoidanceItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 4,
+    paddingVertical: 4,
+  },
+  avoidanceContent: {
+    flex: 1,
   },
   avoidanceText: {
     fontSize: 14,
     color: '#6b7280',
   },
+  avoidanceReason: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginLeft: 8,
+  },
+  removeButton: {
+    padding: 4,
+  },
   addAvoidanceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 8,
+    gap: 4,
   },
   addAvoidanceText: {
     fontSize: 14,
     color: '#10b981',
     fontWeight: '600',
+  },
+  addIngredientForm: {
+    marginTop: 12,
+    padding: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  textInput: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  formButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '600',
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: '#10b981',
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    padding: 24,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6b7280',
   },
   appInfo: {
     alignItems: 'center',
