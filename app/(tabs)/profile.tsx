@@ -195,6 +195,7 @@ export default function ProfileScreen() {
 
         {/* Dietary Preferences */}
         <MenuSection title="Dietary Preferences">
+          <>
           {loading ? (
             <View style={styles.loadingContainer}>
               <Text style={styles.loadingText}>Loading preferences...</Text>
@@ -249,6 +250,7 @@ export default function ProfileScreen() {
             >
               <Text style={styles.addAvoidanceText}>+ Add Custom Ingredient</Text>
             </TouchableOpacity>
+          </>
         </MenuSection>
 
         {/* Account Settings */}
