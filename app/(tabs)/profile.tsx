@@ -226,9 +226,10 @@ export default function ProfileScreen() {
               >
                 <Plus size={16} color="#10b981" />
                 <Text style={styles.addAvoidanceText}>Add Custom Ingredient</Text>
-            </TouchableOpacity>
+              </TouchableOpacity>
             )}
           </View>
+            </>
             )}
         </MenuSection>
 
