@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Shield, Zap, Users, TrendingUp, Camera, ChevronRight, Star, CircleCheck as CheckCircle, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
@@ -108,107 +109,123 @@ export default function HomeScreen() {
 
         {/* Features Section */}
         <View style={styles.section}>
-          <TouchableOpacity 
-            style={styles.dropdownHeader}
-            onPress={() => setFeaturesExpanded(!featuresExpanded)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.dropdownTitle}>Why Choose Food Safety Scanner?</Text>
-            {featuresExpanded ? (
-              <ChevronUp size={24} color="#10b981" />
-            ) : (
-              <ChevronDown size={24} color="#10b981" />
-            )}
-          </TouchableOpacity>
+          <BlurView intensity={20} tint="light" style={styles.glassContainer}>
+            <TouchableOpacity 
+              style={styles.dropdownHeader}
+              onPress={() => setFeaturesExpanded(!featuresExpanded)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.dropdownTitle}>Why Choose Food Safety Scanner?</Text>
+              {featuresExpanded ? (
+                <ChevronUp size={24} color="#10b981" />
+              ) : (
+                <ChevronDown size={24} color="#10b981" />
+              )}
+            </TouchableOpacity>
+          </BlurView>
           
           {featuresExpanded && (
             <View style={styles.featuresGrid}>
               {features.map((feature, index) => (
-                <View key={index} style={styles.featureCard}>
-                  <View style={[styles.featureIcon, { backgroundColor: `${feature.color}15` }]}>
-                    <feature.icon size={24} color={feature.color} />
+                <BlurView key={index} intensity={15} tint="light" style={styles.featureCard}>
+                  <View style={styles.featureCardContent}>
+                    <View style={[styles.featureIcon, { backgroundColor: `${feature.color}15` }]}>
+                      <feature.icon size={24} color={feature.color} />
+                    </View>
+                    <Text style={styles.featureTitle}>{feature.title}</Text>
+                    <Text style={styles.featureDescription}>{feature.description}</Text>
                   </View>
-                  <Text style={styles.featureTitle}>{feature.title}</Text>
-                  <Text style={styles.featureDescription}>{feature.description}</Text>
-                </View>
+                </BlurView>
               ))}
             </View>
           )}
         </View>
 
         {/* How It Works Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>How It Works</Text>
-          <View style={styles.stepsContainer}>
-            <View style={styles.stepCard}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>1</Text>
+        <BlurView intensity={20} tint="light" style={[styles.section, styles.glassContainer]}>
+          <View style={styles.glassContent}>
+            <Text style={styles.sectionTitle}>How It Works</Text>
+            <View style={styles.stepsContainer}>
+              <View style={styles.stepCard}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>1</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Scan or Upload</Text>
+                  <Text style={styles.stepDescription}>
+                    Take a photo of any ingredient label or upload from your gallery
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.stepTitle}>Scan or Upload</Text>
-              <Text style={styles.stepDescription}>
-                Take a photo of any ingredient label or upload from your gallery
-              </Text>
-            </View>
-            
-            <View style={styles.stepCard}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>2</Text>
+              
+              <View style={styles.stepCard}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>2</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>AI Analysis</Text>
+                  <Text style={styles.stepDescription}>
+                    Our AI identifies each ingredient and cross-references safety databases
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.stepTitle}>AI Analysis</Text>
-              <Text style={styles.stepDescription}>
-                Our AI identifies each ingredient and cross-references safety databases
-              </Text>
-            </View>
-            
-            <View style={styles.stepCard}>
-              <View style={styles.stepNumber}>
-                <Text style={styles.stepNumberText}>3</Text>
+              
+              <View style={styles.stepCard}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>3</Text>
+                </View>
+                <View style={styles.stepContent}>
+                  <Text style={styles.stepTitle}>Get Results</Text>
+                  <Text style={styles.stepDescription}>
+                    Receive safety ratings, explanations, and healthier alternatives
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.stepTitle}>Get Results</Text>
-              <Text style={styles.stepDescription}>
-                Receive safety ratings, explanations, and healthier alternatives
-              </Text>
             </View>
           </View>
-        </View>
+        </BlurView>
 
         {/* Trust Indicators */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Trusted by Health Professionals</Text>
-          <View style={styles.trustIndicators}>
-            <View style={styles.trustItem}>
-              <CheckCircle size={20} color="#10b981" />
-              <Text style={styles.trustText}>FDA Database Integration</Text>
-            </View>
-            <View style={styles.trustItem}>
-              <CheckCircle size={20} color="#10b981" />
-              <Text style={styles.trustText}>EWG Food Scores</Text>
-            </View>
-            <View style={styles.trustItem}>
-              <CheckCircle size={20} color="#10b981" />
-              <Text style={styles.trustText}>Scientific Research Backed</Text>
-            </View>
-            <View style={styles.trustItem}>
-              <CheckCircle size={20} color="#10b981" />
-              <Text style={styles.trustText}>Regular Database Updates</Text>
+        <BlurView intensity={20} tint="light" style={[styles.section, styles.glassContainer]}>
+          <View style={styles.glassContent}>
+            <Text style={styles.sectionTitle}>Trusted by Health Professionals</Text>
+            <View style={styles.trustIndicators}>
+              <View style={styles.trustItem}>
+                <CheckCircle size={20} color="#10b981" />
+                <Text style={styles.trustText}>FDA Database Integration</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <CheckCircle size={20} color="#10b981" />
+                <Text style={styles.trustText}>EWG Food Scores</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <CheckCircle size={20} color="#10b981" />
+                <Text style={styles.trustText}>Scientific Research Backed</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <CheckCircle size={20} color="#10b981" />
+                <Text style={styles.trustText}>Regular Database Updates</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </BlurView>
 
         {/* Final CTA */}
-        <View style={styles.finalCTA}>
-          <Text style={styles.finalCTATitle}>Ready to eat with confidence?</Text>
-          <Text style={styles.finalCTASubtitle}>
-            Join thousands of users making safer food choices every day
-          </Text>
-          <TouchableOpacity 
-            style={styles.finalCTAButton}
-            onPress={handleScanPress}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.finalCTAButtonText}>Start Your First Scan</Text>
-          </TouchableOpacity>
-        </View>
+        <BlurView intensity={25} tint="light" style={styles.finalCTA}>
+          <View style={styles.glassContent}>
+            <Text style={styles.finalCTATitle}>Ready to eat with confidence?</Text>
+            <Text style={styles.finalCTASubtitle}>
+              Join thousands of users making safer food choices every day
+            </Text>
+            <TouchableOpacity 
+              style={styles.finalCTAButton}
+              onPress={handleScanPress}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.finalCTAButtonText}>Start Your First Scan</Text>
+            </TouchableOpacity>
+          </View>
+        </BlurView>
       </ScrollView>
       </SafeAreaView>
     </View>
@@ -293,12 +310,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
     marginBottom: 16,
   },
   dropdownTitle: {
@@ -311,11 +325,11 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   featureCard: {
-    backgroundColor: '#f9fafb',
-    padding: 20,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    overflow: 'hidden',
+  },
+  featureCardContent: {
+    padding: 20,
   },
   featureIcon: {
     width: 48,
@@ -344,6 +358,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 16,
   },
+  stepContent: {
+    flex: 1,
+  },
   stepNumber: {
     width: 32,
     height: 32,
@@ -363,13 +380,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
-    flex: 1,
   },
   stepDescription: {
     fontSize: 14,
     color: '#6b7280',
     lineHeight: 20,
-    flex: 1,
   },
   trustIndicators: {
     gap: 12,
@@ -385,11 +400,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   finalCTA: {
-    backgroundColor: '#f9fafb',
     padding: 32,
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderRadius: 16,
+    margin: 24,
+    overflow: 'hidden',
   },
   finalCTATitle: {
     fontSize: 20,
@@ -419,5 +434,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+  },
+  glassContainer: {
+    borderRadius: 16,
+    margin: 24,
+    marginTop: 0,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  glassContent: {
+    padding: 24,
   },
 });
