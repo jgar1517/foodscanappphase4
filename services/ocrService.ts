@@ -1,5 +1,4 @@
 import * as ImagePicker from 'expo-image-picker';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 
 // OCR Service Interface
 export interface OCRResult {
@@ -42,39 +41,8 @@ class OCRService {
   async extractTextFromImage(imageUri: string): Promise<OCRResult> {
     const startTime = Date.now();
     
-    try {
-      // Use Google ML Kit for real OCR processing
-      const result = await TextRecognition.recognize(imageUri);
-      
-      const blocks: TextBlock[] = result.blocks.map(block => ({
-        text: block.text,
-        boundingBox: {
-          x: block.frame.x,
-          y: block.frame.y,
-          width: block.frame.width,
-          height: block.frame.height
-        },
-        confidence: block.confidence || 0.8
-      }));
-
-      const fullText = result.text;
-      const averageConfidence = blocks.length > 0 
-        ? blocks.reduce((sum, block) => sum + block.confidence, 0) / blocks.length 
-        : 0.8;
-
-      const processingTime = Date.now() - startTime;
-      console.log(`ML Kit OCR processing completed in ${processingTime}ms`);
-      
-      return {
-        text: fullText,
-        confidence: Math.round(averageConfidence * 100),
-        blocks
-      };
-    } catch (error) {
-      console.error('ML Kit OCR failed, falling back to mock:', error);
-      // Fallback to mock OCR for development/testing
-      return await this.simulateOCR(imageUri);
-    }
+    // Use mock OCR for Expo managed workflow
+    return await this.simulateOCR(imageUri);
   }
 
   /**
