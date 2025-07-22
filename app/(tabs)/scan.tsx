@@ -9,11 +9,11 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, FlipHorizontal, Image as ImageIcon, Zap, X, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import StarBackground from '@/components/StarBackground';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,29 +27,33 @@ export default function ScanScreen() {
 
   if (!permission) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>Camera permissions are loading...</Text>
-      </View>
+      <StarBackground>
+        <View style={styles.container}>
+          <Text style={styles.message}>Camera permissions are loading...</Text>
+        </View>
+      </StarBackground>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.permissionContainer}>
-          <Camera size={80} color="#10b981" />
-          <Text style={styles.permissionTitle}>Camera Access Required</Text>
-          <Text style={styles.permissionMessage}>
-            We need access to your camera to scan ingredient labels and provide safety analysis.
-          </Text>
-          <TouchableOpacity 
-            style={styles.permissionButton}
-            onPress={requestPermission}
-          >
-            <Text style={styles.permissionButtonText}>Grant Camera Access</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <StarBackground>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.permissionContainer}>
+            <Camera size={80} color="#fbbf24" />
+            <Text style={styles.permissionTitle}>Camera Access Required</Text>
+            <Text style={styles.permissionMessage}>
+              We need access to your camera to scan ingredient labels and provide safety analysis.
+            </Text>
+            <TouchableOpacity 
+              style={styles.permissionButton}
+              onPress={requestPermission}
+            >
+              <Text style={styles.permissionButtonText}>Grant Camera Access</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </StarBackground>
     );
   }
 
@@ -109,58 +113,61 @@ export default function ScanScreen() {
 
   if (capturedImage) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.previewContainer}>
-          <Image source={{ uri: capturedImage }} style={styles.previewImage} />
-          
-          <View style={styles.previewOverlay}>
-            <TouchableOpacity 
-              style={styles.retakeButton}
-              onPress={retakePicture}
-            >
-              <X size={24} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.previewActions}>
-            <TouchableOpacity 
-              style={styles.secondaryButton}
-              onPress={retakePicture}
-            >
-              <Text style={styles.secondaryButtonText}>Retake</Text>
-            </TouchableOpacity>
+      <StarBackground>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.previewContainer}>
+            <Image source={{ uri: capturedImage }} style={styles.previewImage} />
             
-            <TouchableOpacity 
-              style={[styles.primaryButton, isProcessing && styles.buttonDisabled]}
-              onPress={processPicture}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <>
-                  <Zap size={20} color="#ffffff" />
-                  <Text style={styles.primaryButtonText}>Processing...</Text>
-                </>
-              ) : (
-                <>
-                  <CheckCircle size={20} color="#ffffff" />
-                  <Text style={styles.primaryButtonText}>Analyze Ingredients</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <View style={styles.previewOverlay}>
+              <TouchableOpacity 
+                style={styles.retakeButton}
+                onPress={retakePicture}
+              >
+                <X size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.previewActions}>
+              <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={retakePicture}
+              >
+                <Text style={styles.secondaryButtonText}>Retake</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.primaryButton, isProcessing && styles.buttonDisabled]}
+                onPress={processPicture}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <Zap size={20} color="#1f2937" />
+                    <Text style={styles.primaryButtonText}>Processing...</Text>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={20} color="#1f2937" />
+                    <Text style={styles.primaryButtonText}>Analyze Ingredients</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </StarBackground>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Scan Ingredient Label</Text>
-        <Text style={styles.headerSubtitle}>
-          Position the ingredient label within the frame for best results
-        </Text>
-      </View>
+    <StarBackground>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Scan Ingredient Label</Text>
+          <Text style={styles.headerSubtitle}>
+            Position the ingredient label within the frame for best results
+          </Text>
+        </View>
 
       <View style={styles.cameraContainer}>
         <CameraView
@@ -210,22 +217,23 @@ export default function ScanScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.tips}>
-        <Text style={styles.tipsTitle}>Tips for Better Results:</Text>
-        <Text style={styles.tipsText}>
-          • Ensure good lighting and clear focus{'\n'}
-          • Keep the label flat and avoid shadows{'\n'}
-          • Make sure all text is visible in the frame
-        </Text>
-      </View>
-    </SafeAreaView>
+        <View style={styles.tips}>
+          <Text style={styles.tipsTitle}>Tips for Better Results:</Text>
+          <Text style={styles.tipsText}>
+            • Ensure good lighting and clear focus{'\n'}
+            • Keep the label flat and avoid shadows{'\n'}
+            • Make sure all text is visible in the frame
+          </Text>
+        </View>
+      </SafeAreaView>
+    </StarBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: 'transparent',
   },
   message: {
     fontSize: 16,
@@ -239,25 +247,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'transparent',
   },
   permissionTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginTop: 24,
     marginBottom: 16,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   permissionMessage: {
     fontSize: 16,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   permissionButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#fbbf24',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 32,
@@ -270,24 +284,27 @@ const styles = StyleSheet.create({
   permissionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 24,
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   cameraContainer: {
     flex: 1,
@@ -313,7 +330,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 24,
     height: 24,
-    borderColor: '#10b981',
+    borderColor: '#fbbf24',
     borderWidth: 3,
   },
   topLeft: {
@@ -363,7 +380,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
     paddingVertical: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   controlButton: {
     alignItems: 'center',
@@ -373,7 +390,7 @@ const styles = StyleSheet.create({
   },
   controlButtonText: {
     fontSize: 12,
-    color: '#10b981',
+    color: '#fbbf24',
     fontWeight: '600',
     marginTop: 4,
   },
@@ -385,30 +402,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#10b981',
+    borderColor: '#fbbf24',
   },
   captureButtonInner: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#10b981',
+    backgroundColor: '#fbbf24',
   },
   tips: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: 'rgba(255, 255, 255, 0.2)',
   },
   tipsTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 8,
   },
   tipsText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 16,
   },
   previewContainer: {
@@ -438,7 +455,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     flexDirection: 'row',
     paddingHorizontal: 24,
     paddingVertical: 24,
@@ -446,7 +463,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -454,11 +471,11 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#374151',
+    color: '#ffffff',
   },
   primaryButton: {
     flex: 2,
-    backgroundColor: '#10b981',
+    backgroundColor: '#fbbf24',
     paddingVertical: 16,
     borderRadius: 12,
     flexDirection: 'row',
@@ -469,7 +486,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
   },
   buttonDisabled: {
     opacity: 0.7,

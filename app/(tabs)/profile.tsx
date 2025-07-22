@@ -9,8 +9,8 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { User, Settings, Heart, Shield, Star, FileText, CircleHelp as HelpCircle, LogOut, ChevronRight, Crown, Zap, Calendar, ChartBar as BarChart3 } from 'lucide-react-native';
+import StarBackground from '@/components/StarBackground';
 
 const dietaryOptions = [
   { id: 'gluten-free', label: 'Gluten-Free', active: true },
@@ -88,29 +88,30 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.profileImageContainer}>
-            <Image
-              source={{ uri: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=300' }}
-              style={styles.profileImage}
-            />
-            <TouchableOpacity style={styles.editImageButton}>
-              <Settings size={16} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Sarah Johnson</Text>
-            <Text style={styles.profileEmail}>sarah.johnson@email.com</Text>
-            <View style={styles.membershipBadge}>
-              <Star size={14} color="#f59e0b" fill="#f59e0b" />
-              <Text style={styles.membershipText}>Free Member</Text>
+    <StarBackground>
+      <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Profile Header */}
+          <View style={styles.profileHeader}>
+            <View style={styles.profileImageContainer}>
+              <Image
+                source={{ uri: 'https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=300' }}
+                style={styles.profileImage}
+              />
+              <TouchableOpacity style={styles.editImageButton}>
+                <Settings size={16} color="#1f2937" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>Sarah Johnson</Text>
+              <Text style={styles.profileEmail}>sarah.johnson@email.com</Text>
+              <View style={styles.membershipBadge}>
+                <Star size={14} color="#f59e0b" fill="#f59e0b" />
+                <Text style={styles.membershipText}>Free Member</Text>
+              </View>
             </View>
           </View>
-        </View>
 
         {/* Stats Overview */}
         <View style={styles.statsContainer}>
@@ -306,16 +307,17 @@ export default function ProfileScreen() {
           <Text style={styles.appInfoText}>
             Member since {userStats.memberSince}
           </Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </StarBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,
@@ -325,9 +327,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 24,
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
   },
   profileImageContainer: {
     position: 'relative',
@@ -345,7 +347,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#10b981',
+    backgroundColor: '#fbbf24',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -355,12 +357,15 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   profileEmail: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 8,
   },
   membershipBadge: {
@@ -388,18 +393,18 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   statIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -407,12 +412,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
   upgradeCard: {
@@ -451,7 +456,7 @@ const styles = StyleSheet.create({
   upgradeButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
   },
   menuSection: {
     marginBottom: 32,
@@ -459,9 +464,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 16,
     paddingHorizontal: 24,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   menuItem: {
     flexDirection: 'row',
@@ -469,9 +477,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   menuItemLeft: {
     flexDirection: 'row',
@@ -482,7 +490,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f0fdf4',
+    backgroundColor: 'rgba(251, 191, 36, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -493,12 +501,12 @@ const styles = StyleSheet.create({
   menuItemTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 2,
   },
   menuItemSubtitle: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   dietaryGrid: {
     flexDirection: 'row',
@@ -508,35 +516,35 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   dietaryChip: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   dietaryChipActive: {
-    backgroundColor: '#10b981',
-    borderColor: '#10b981',
+    backgroundColor: '#fbbf24',
+    borderColor: '#fbbf24',
   },
   dietaryChipText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '600',
   },
   dietaryChipTextActive: {
-    color: '#ffffff',
+    color: '#1f2937',
   },
   customAvoidances: {
     paddingHorizontal: 24,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   customAvoidancesTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 8,
   },
   avoidanceItem: {
@@ -544,14 +552,14 @@ const styles = StyleSheet.create({
   },
   avoidanceText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   addAvoidanceButton: {
     marginTop: 8,
   },
   addAvoidanceText: {
     fontSize: 14,
-    color: '#10b981',
+    color: '#fbbf24',
     fontWeight: '600',
   },
   logoutContainer: {
@@ -562,7 +570,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fef2f2',
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
     paddingVertical: 12,
     borderRadius: 8,
     gap: 8,
@@ -579,7 +587,7 @@ const styles = StyleSheet.create({
   },
   appInfoText: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
   },
 });
