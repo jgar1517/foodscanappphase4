@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Shield, Zap, Users, TrendingUp, Camera, ChevronRight, Star, CircleCheck as CheckCircle, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import StarBackground from '@/components/StarBackground';
 
 const { width } = Dimensions.get('window');
 
@@ -72,30 +73,41 @@ export default function HomeScreen() {
   };
 
   return (
-    <StarBackground>
+    <LinearGradient
+      colors={['#9333ea', '#4f46e5']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
       <SafeAreaView style={styles.safeArea}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>
-              Scan with{'\n'}
-              <Text style={styles.heroTitleAccent}>Confidence</Text>
-            </Text>
-            <Text style={styles.heroSubtitle}>
-              AI-powered ingredient safety analysis at your fingertips. Make informed dietary decisions with trusted scientific insights.
-            </Text>
-            
-            <TouchableOpacity 
-              style={styles.ctaButton}
-              onPress={handleScanPress}
-              activeOpacity={0.9}
-            >
-              <Camera size={20} color="#10b981" />
-              <Text style={styles.ctaButtonText}>Start Scanning</Text>
-              <ChevronRight size={20} color="#10b981" />
-            </TouchableOpacity>
-          </View>
+          <ImageBackground
+            source={require('@/assets/images/image.png')}
+            style={styles.heroBackground}
+            resizeMode="cover"
+          >
+            <View style={styles.heroContent}>
+              <Text style={styles.heroTitle}>
+                Scan with{'\n'}
+                <Text style={styles.heroTitleAccent}>Confidence</Text>
+              </Text>
+              <Text style={styles.heroSubtitle}>
+                AI-powered ingredient safety analysis at your fingertips. Make informed dietary decisions with trusted scientific insights.
+              </Text>
+              
+              <TouchableOpacity 
+                style={styles.ctaButton}
+                onPress={handleScanPress}
+                activeOpacity={0.9}
+              >
+                <Camera size={20} color="#10b981" />
+                <Text style={styles.ctaButtonText}>Start Scanning</Text>
+                <ChevronRight size={20} color="#10b981" />
+              </TouchableOpacity>
+            </View>
+          </ImageBackground>
         </View>
 
         {/* Features Section */}
@@ -203,7 +215,7 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
       </SafeAreaView>
-    </StarBackground>
+    </LinearGradient>
   );
 }
 
@@ -219,8 +231,13 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // Add padding for tab bar
   },
   heroSection: {
-    paddingVertical: 60,
+    height: 400,
     marginBottom: 32,
+  },
+  heroBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   heroContent: {
     alignItems: 'center',
@@ -233,23 +250,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 44,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   heroTitleAccent: {
-    color: '#fbbf24',
+    color: '#10b981',
   },
   heroSubtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#f3f4f6',
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
     paddingHorizontal: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   ctaButton: {
     flexDirection: 'row',
@@ -277,40 +288,37 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1f2937',
     marginBottom: 24,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   dropdownHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: '#e5e7eb',
     marginBottom: 16,
   },
   dropdownTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1f2937',
     flex: 1,
   },
   featuresGrid: {
     gap: 20,
   },
   featureCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     padding: 20,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: '#e5e7eb',
   },
   featureIcon: {
     width: 48,
@@ -323,12 +331,12 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
     marginBottom: 8,
   },
   featureDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
     lineHeight: 20,
   },
   stepsContainer: {
@@ -343,7 +351,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#fbbf24',
+    backgroundColor: '#10b981',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
@@ -351,18 +359,18 @@ const styles = StyleSheet.create({
   stepNumberText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
   },
   stepTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
     marginBottom: 4,
     flex: 1,
   },
   stepDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
     lineHeight: 20,
     flex: 1,
   },
@@ -376,31 +384,31 @@ const styles = StyleSheet.create({
   },
   trustText: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#374151',
     fontWeight: '500',
   },
   finalCTA: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     padding: 32,
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    borderTopColor: '#e5e7eb',
   },
   finalCTATitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1f2937',
     marginBottom: 8,
     textAlign: 'center',
   },
   finalCTASubtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
     textAlign: 'center',
     marginBottom: 24,
   },
   finalCTAButton: {
-    backgroundColor: '#fbbf24',
+    backgroundColor: '#10b981',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 32,
@@ -413,6 +421,6 @@ const styles = StyleSheet.create({
   finalCTAButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
   },
 });

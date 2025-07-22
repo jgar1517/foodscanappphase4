@@ -9,8 +9,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Circle as XCircle, ExternalLink, Lightbulb, Clock, Star, ShoppingCart, ChevronRight, Share } from 'lucide-react-native';
-import StarBackground from '@/components/StarBackground';
 
 const { width } = Dimensions.get('window');
 
@@ -277,24 +277,23 @@ export default function ResultsScreen() {
   );
 
   return (
-    <StarBackground>
-      <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <Image source={{ uri: mockScanResult.imageUrl }} style={styles.headerImage} />
-              <View style={styles.headerInfo}>
-                <Text style={styles.headerTitle}>Scan Results</Text>
-                <Text style={styles.headerSubtitle}>
-                  {mockScanResult.totalIngredients} ingredients analyzed in {mockScanResult.processingTime}s
-                </Text>
-              </View>
-              <TouchableOpacity style={styles.shareButton}>
-                <Share size={20} color="#fbbf24" />
-              </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Image source={{ uri: mockScanResult.imageUrl }} style={styles.headerImage} />
+            <View style={styles.headerInfo}>
+              <Text style={styles.headerTitle}>Scan Results</Text>
+              <Text style={styles.headerSubtitle}>
+                {mockScanResult.totalIngredients} ingredients analyzed in {mockScanResult.processingTime}s
+              </Text>
             </View>
+            <TouchableOpacity style={styles.shareButton}>
+              <Share size={20} color="#10b981" />
+            </TouchableOpacity>
           </View>
+        </View>
 
         {/* Safety Overview */}
         <View style={styles.overviewSection}>
@@ -366,27 +365,26 @@ export default function ResultsScreen() {
         
         {activeTab === 'alternatives' && renderRecommendations()}
         
-          {activeTab === 'recipes' && renderRecipes()}
-        </ScrollView>
-      </SafeAreaView>
-    </StarBackground>
+        {activeTab === 'recipes' && renderRecipes()}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#ffffff',
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     paddingHorizontal: 24,
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    borderBottomColor: '#e5e7eb',
   },
   headerContent: {
     flexDirection: 'row',
@@ -404,21 +402,18 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1f2937',
     marginBottom: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
   },
   shareButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -440,7 +435,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   scoreText: {
     fontSize: 32,
@@ -448,7 +442,7 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
     fontWeight: '600',
   },
   summaryRow: {
@@ -470,16 +464,16 @@ const styles = StyleSheet.create({
   summaryCount: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1f2937',
   },
   summaryLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
     fontWeight: '600',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     marginHorizontal: 24,
     borderRadius: 12,
     padding: 4,
@@ -491,7 +485,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTab: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -501,10 +495,10 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#6b7280',
   },
   activeTabText: {
-    color: '#fbbf24',
+    color: '#10b981',
   },
   tabContent: {
     paddingHorizontal: 24,
@@ -513,19 +507,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1f2937',
     marginBottom: 16,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   ingredientCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: '#e5e7eb',
   },
   ingredientHeader: {
     flexDirection: 'row',
@@ -539,7 +530,7 @@ const styles = StyleSheet.create({
   ingredientName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
     marginBottom: 4,
   },
   ingredientMeta: {
@@ -548,11 +539,11 @@ const styles = StyleSheet.create({
   },
   ingredientPosition: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#6b7280',
   },
   ingredientConfidence: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#6b7280',
   },
   ratingBadge: {
     flexDirection: 'row',
@@ -568,7 +559,7 @@ const styles = StyleSheet.create({
   },
   ingredientExplanation: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#374151',
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -579,7 +570,7 @@ const styles = StyleSheet.create({
   },
   sourcesLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#6b7280',
     fontWeight: '600',
   },
   sourcesRow: {
@@ -587,23 +578,23 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sourceTag: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#e5e7eb',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   sourceText: {
     fontSize: 10,
-    color: '#ffffff',
+    color: '#374151',
     fontWeight: '600',
   },
   recommendationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: '#e5e7eb',
     flexDirection: 'row',
     gap: 12,
   },
@@ -624,7 +615,7 @@ const styles = StyleSheet.create({
   recommendationName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
     flex: 1,
   },
   recommendationScore: {
@@ -635,22 +626,22 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
   },
   recommendationBrand: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#6b7280',
     marginBottom: 6,
   },
   recommendationDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#374151',
     lineHeight: 18,
     marginBottom: 6,
   },
   recommendationReason: {
     fontSize: 12,
-    color: '#fbbf24',
+    color: '#10b981',
     fontWeight: '600',
     marginBottom: 12,
   },
@@ -662,12 +653,12 @@ const styles = StyleSheet.create({
   recommendationPrice: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#1f2937',
   },
   buyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+    backgroundColor: '#10b98115',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -676,15 +667,15 @@ const styles = StyleSheet.create({
   buyButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#fbbf24',
+    color: '#10b981',
   },
   recipeCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f9fafb',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: '#e5e7eb',
   },
   recipeImage: {
     width: '100%',
@@ -698,11 +689,11 @@ const styles = StyleSheet.create({
   recipeName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#1f2937',
   },
   recipeDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
   },
   recipeDetails: {
     flexDirection: 'row',
@@ -715,20 +706,20 @@ const styles = StyleSheet.create({
   },
   recipeDetailText: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#6b7280',
   },
   ingredientsList: {
     gap: 2,
   },
   recipeIngredient: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#374151',
   },
   viewRecipeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+    backgroundColor: '#10b98115',
     paddingVertical: 12,
     borderRadius: 8,
     gap: 4,
@@ -736,6 +727,6 @@ const styles = StyleSheet.create({
   viewRecipeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fbbf24',
+    color: '#10b981',
   },
 });
