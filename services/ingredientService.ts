@@ -1,6 +1,8 @@
 // Ingredient Safety Rating Types
 export type SafetyRating = 'safe' | 'caution' | 'avoid';
 
+import AIAnalysisService from './aiAnalysisService';
+
 export interface IngredientInfo {
   id: string;
   name: string;
@@ -188,6 +190,9 @@ class IngredientService {
     const startTime = Date.now();
     
     try {
+      // Use AI-enhanced analysis for better accuracy
+      const aiAnalysis = await AIAnalysisService.analyzeIngredientsBatch(ingredients);
+      
       const analyses: IngredientAnalysis[] = [];
       let safeCount = 0;
       let cautionCount = 0;
@@ -195,7 +200,8 @@ class IngredientService {
 
       for (let i = 0; i < ingredients.length; i++) {
         const ingredient = ingredients[i];
-        const analysis = await this.analyzeIngredient(ingredient, i + 1);
+        const aiIngredientAnalysis = aiAnalysis.ingredients[i];
+        const analysis = await this.analyzeIngredient(ingredient, i + 1, aiIngredientAnalysis);
         analyses.push(analysis);
 
         // Count ratings for summary
@@ -239,12 +245,30 @@ class IngredientService {
   /**
    * Analyze a single ingredient
    */
-  private async analyzeIngredient(ingredientName: string, position: number): Promise<IngredientAnalysis> {
+  private async analyzeIngredient(
+    ingredientName: string, 
+    position: number, 
+    aiAnalysis?: any
+  ): Promise<IngredientAnalysis> {
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 100));
 
     const normalizedName = ingredientName.toLowerCase().trim();
     const ingredientInfo = this.findIngredientInfo(normalizedName);
+
+    // Use AI analysis if available and more confident
+    if (aiAnalysis && aiAnalysis.confidence > 70) {
+      return {
+        name: ingredientName,
+        position,
+        rating: aiAnalysis.safetyRating,
+        confidence: aiAnalysis.confidence,
+        explanation: aiAnalysis.reasoning,
+        sources: aiAnalysis.sources,
+        healthConcerns: aiAnalysis.healthImpacts,
+        alternatives: aiAnalysis.alternatives
+      };
+    }
 
     if (ingredientInfo) {
       return {
@@ -263,11 +287,11 @@ class IngredientService {
         name: ingredientName,
         position,
         rating: 'caution',
-        confidence: 50,
-        explanation: 'This ingredient is not in our database. We recommend researching it further or consulting with a healthcare professional.',
-        sources: ['Unknown'],
-        healthConcerns: ['Unknown safety profile'],
-        alternatives: []
+        confidence: aiAnalysis?.confidence || 50,
+        explanation: aiAnalysis?.reasoning || 'This ingredient is not in our database. We recommend researching it further or consulting with a healthcare professional.',
+        sources: aiAnalysis?.sources || ['Unknown'],
+        healthConcerns: aiAnalysis?.healthImpacts || ['Unknown safety profile'],
+        alternatives: aiAnalysis?.alternatives || []
       };
     }
   }
