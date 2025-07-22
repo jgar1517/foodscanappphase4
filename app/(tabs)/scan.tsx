@@ -14,6 +14,7 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, FlipHorizontal, Image as ImageIcon, Zap, X, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import ScanService from '@/services/scanService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -99,12 +100,25 @@ export default function ScanScreen() {
 
     setIsProcessing(true);
     
-    // Simulate processing time
-    setTimeout(() => {
+    try {
+      // Process the scan using our OCR and ingredient analysis services
+      const result = await ScanService.processScan(capturedImage);
+      
+      console.log('Scan completed:', result);
+      
+      // Navigate to results with the scan session ID
       setIsProcessing(false);
       setCapturedImage(null);
-      router.push('/results');
-    }, 3000);
+      router.push(`/results?sessionId=${result.session.id}`);
+    } catch (error) {
+      console.error('Scan processing failed:', error);
+      setIsProcessing(false);
+      Alert.alert(
+        'Processing Failed', 
+        'We couldn\'t process your image. Please try again with better lighting or a clearer photo.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   if (capturedImage) {

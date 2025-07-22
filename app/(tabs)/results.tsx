@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import ScanService, { ScanSession } from '@/services/scanService';
+import { AnalysisResult } from '@/services/ingredientService';
 import {
   View,
   Text,
@@ -13,115 +16,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Circle as XCircle, ExternalLink, Lightbulb, Clock, Star, ShoppingCart, ChevronRight, Share } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
-
-// Mock data for demonstration
-const mockScanResult = {
-  id: '1',
-  imageUrl: 'https://images.pexels.com/photos/4110008/pexels-photo-4110008.jpeg?auto=compress&cs=tinysrgb&w=400',
-  totalIngredients: 8,
-  safetyScore: 72,
-  processingTime: 4.2,
-  ingredients: [
-    {
-      name: 'Water',
-      rating: 'safe',
-      confidence: 100,
-      explanation: 'Water is essential for life and poses no safety concerns.',
-      sources: ['FDA', 'EWG'],
-      position: 1,
-    },
-    {
-      name: 'Organic Cane Sugar',
-      rating: 'caution',
-      confidence: 85,
-      explanation: 'High sugar content may contribute to weight gain and dental issues. Moderate consumption recommended.',
-      sources: ['EWG', 'WHO'],
-      position: 2,
-    },
-    {
-      name: 'Natural Flavors',
-      rating: 'caution',
-      confidence: 70,
-      explanation: 'While generally safe, "natural flavors" can be vague and may contain allergens or chemicals not listed.',
-      sources: ['FDA', 'EWG'],
-      position: 3,
-    },
-    {
-      name: 'Citric Acid',
-      rating: 'safe',
-      confidence: 95,
-      explanation: 'Commonly used preservative and flavor enhancer, generally recognized as safe by FDA.',
-      sources: ['FDA'],
-      position: 4,
-    },
-    {
-      name: 'Sodium Benzoate',
-      rating: 'avoid',
-      confidence: 80,
-      explanation: 'May form benzene (a carcinogen) when combined with vitamin C. Can cause hyperactivity in children.',
-      sources: ['EWG', 'Scientific Studies'],
-      position: 5,
-    },
-    {
-      name: 'Ascorbic Acid (Vitamin C)',
-      rating: 'safe',
-      confidence: 100,
-      explanation: 'Essential vitamin with antioxidant properties. Beneficial for immune system health.',
-      sources: ['FDA', 'NIH'],
-      position: 6,
-    },
-    {
-      name: 'Artificial Color Red 40',
-      rating: 'avoid',
-      confidence: 85,
-      explanation: 'Linked to hyperactivity in children and may cause allergic reactions. Banned in some countries.',
-      sources: ['EWG', 'European Food Safety Authority'],
-      position: 7,
-    },
-    {
-      name: 'Gum Arabic',
-      rating: 'safe',
-      confidence: 90,
-      explanation: 'Natural fiber that acts as a thickener and stabilizer. Generally safe for consumption.',
-      sources: ['FDA'],
-      position: 8,
-    },
-  ],
-  recommendations: [
-    {
-      rank: 1,
-      productName: 'Simply Organic Orange Juice',
-      brand: 'Simply Orange',
-      description: '100% pure orange juice with no added sugars or artificial ingredients',
-      imageUrl: 'https://images.pexels.com/photos/96974/pexels-photo-96974.jpeg?auto=compress&cs=tinysrgb&w=300',
-      retailer: 'Amazon',
-      price: 4.99,
-      safetyScore: 92,
-      reason: 'Contains only natural ingredients with no artificial additives',
-    },
-    {
-      rank: 2,
-      productName: 'Honest Kids Organic Juice',
-      brand: 'Honest Tea',
-      description: 'Organic fruit juice with no artificial flavors or preservatives',
-      imageUrl: 'https://images.pexels.com/photos/1233319/pexels-photo-1233319.jpeg?auto=compress&cs=tinysrgb&w=300',
-      retailer: 'Target',
-      price: 3.49,
-      safetyScore: 88,
-      reason: 'USDA organic certification ensures cleaner ingredients',
-    },
-  ],
-  recipes: [
-    {
-      name: 'Homemade Orange Refresher',
-      description: 'Fresh orange juice with natural sweeteners',
-      imageUrl: 'https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&w=300',
-      prepTime: 5,
-      difficulty: 'Easy',
-      ingredients: ['2 fresh oranges', '1 cup sparkling water', '1 tsp honey', 'Ice cubes'],
-    },
-  ],
-};
 
 const getRatingColor = (rating: string) => {
   switch (rating) {
@@ -162,11 +56,72 @@ const SafetyScoreCircle = ({ score }: { score: number }) => {
 
 export default function ResultsScreen() {
   const [activeTab, setActiveTab] = useState('ingredients');
+  const [scanSession, setScanSession] = useState<ScanSession | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  const safetySummary = mockScanResult.ingredients.reduce((acc, ingredient) => {
-    acc[ingredient.rating] = (acc[ingredient.rating] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
+
+  // Load scan results on component mount
+  React.useEffect(() => {
+    loadScanResults();
+  }, [sessionId]);
+
+  const loadScanResults = async () => {
+    if (!sessionId) {
+      setError('No scan session found');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const session = await ScanService.getScanSession(sessionId);
+      if (!session) {
+        setError('Scan session not found');
+        setLoading(false);
+        return;
+      }
+
+      if (session.status !== 'completed' || !session.analysisResult) {
+        setError('Scan analysis not completed');
+        setLoading(false);
+        return;
+      }
+
+      setScanSession(session);
+      setAnalysisResult(session.analysisResult);
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to load scan results:', err);
+      setError('Failed to load scan results');
+      setLoading(false);
+    }
+  };
+  
+  // Show loading state
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading scan results...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error state
+  if (error || !scanSession || !analysisResult) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error || 'No scan data available'}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const safetySummary = analysisResult.summary;
 
   const renderIngredientItem = (ingredient: any) => {
     const IconComponent = getRatingIcon(ingredient.rating);
@@ -282,11 +237,11 @@ export default function ResultsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
-            <Image source={{ uri: mockScanResult.imageUrl }} style={styles.headerImage} />
+            <Image source={{ uri: scanSession.imageUri }} style={styles.headerImage} />
             <View style={styles.headerInfo}>
               <Text style={styles.headerTitle}>Scan Results</Text>
               <Text style={styles.headerSubtitle}>
-                {mockScanResult.totalIngredients} ingredients analyzed in {mockScanResult.processingTime}s
+                {analysisResult.ingredients.length} ingredients analyzed in {(analysisResult.processingTime / 1000).toFixed(1)}s
               </Text>
             </View>
             <TouchableOpacity style={styles.shareButton}>
@@ -297,7 +252,7 @@ export default function ResultsScreen() {
 
         {/* Safety Overview */}
         <View style={styles.overviewSection}>
-          <SafetyScoreCircle score={mockScanResult.safetyScore} />
+          <SafetyScoreCircle score={analysisResult.overallSafetyScore} />
           
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -359,13 +314,33 @@ export default function ResultsScreen() {
         {/* Tab Content */}
         {activeTab === 'ingredients' && (
           <View style={styles.tabContent}>
-            {mockScanResult.ingredients.map(renderIngredientItem)}
+            {analysisResult.ingredients.map(renderIngredientItem)}
           </View>
         )}
         
-        {activeTab === 'alternatives' && renderRecommendations()}
+        {activeTab === 'alternatives' && (
+          <View style={styles.tabContent}>
+            <Text style={styles.sectionTitle}>Healthier Alternatives</Text>
+            <View style={styles.comingSoonContainer}>
+              <Text style={styles.comingSoonText}>Product recommendations coming soon!</Text>
+              <Text style={styles.comingSoonSubtext}>
+                We're working on integrating with retailers to bring you the best alternative products.
+              </Text>
+            </View>
+          </View>
+        )}
         
-        {activeTab === 'recipes' && renderRecipes()}
+        {activeTab === 'recipes' && (
+          <View style={styles.tabContent}>
+            <Text style={styles.sectionTitle}>Homemade Alternatives</Text>
+            <View style={styles.comingSoonContainer}>
+              <Text style={styles.comingSoonText}>Recipe suggestions coming soon!</Text>
+              <Text style={styles.comingSoonSubtext}>
+                We're developing a recipe engine to suggest healthier homemade alternatives.
+              </Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -728,5 +703,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#10b981',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+    textAlign: 'center',
+  },
+  comingSoonContainer: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  comingSoonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  comingSoonSubtext: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
