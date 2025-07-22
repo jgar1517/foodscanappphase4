@@ -12,37 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { Shield, Zap, Users, TrendingUp, Camera, ChevronRight, Star, CircleCheck as CheckCircle, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { Camera, ChevronRight, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
-
-const features = [
-  {
-    icon: Shield,
-    title: 'AI-Powered Safety Analysis',
-    description: 'Get instant safety ratings for every ingredient based on trusted scientific sources',
-    color: '#10b981',
-  },
-  {
-    icon: Zap,
-    title: 'Instant Results',
-    description: 'Scan any ingredient label and get results in under 5 seconds',
-    color: '#f59e0b',
-  },
-  {
-    icon: Users,
-    title: 'Personalized for You',
-    description: 'Custom dietary profiles adapt safety ratings to your specific needs',
-    color: '#8b5cf6',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Smart Recommendations',
-    description: 'Discover healthier alternatives and simple recipes using safer ingredients',
-    color: '#ef4444',
-  },
-];
 
 const testimonials = [
   {
@@ -66,7 +39,6 @@ const testimonials = [
 ];
 
 export default function HomeScreen() {
-  const [featuresExpanded, setFeaturesExpanded] = React.useState(false);
   const router = useRouter();
 
   const handleScanPress = () => {
@@ -107,39 +79,6 @@ export default function HomeScreen() {
           </LinearGradient>
         </View>
 
-        {/* Features Section */}
-        <View style={styles.section}>
-          <BlurView intensity={20} tint="light" style={styles.glassContainer}>
-            <TouchableOpacity 
-              style={styles.dropdownHeader}
-              onPress={() => setFeaturesExpanded(!featuresExpanded)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.dropdownTitle}>Why Choose Food Safety Scanner?</Text>
-              {featuresExpanded ? (
-                <ChevronUp size={24} color="#10b981" />
-              ) : (
-                <ChevronDown size={24} color="#10b981" />
-              )}
-            </TouchableOpacity>
-          </BlurView>
-          
-          {featuresExpanded && (
-            <View style={styles.featuresGrid}>
-              {features.map((feature, index) => (
-                <BlurView key={index} intensity={15} tint="light" style={styles.featureCard}>
-                  <View style={styles.featureCardContent}>
-                    <View style={[styles.featureIcon, { backgroundColor: `${feature.color}15` }]}>
-                      <feature.icon size={24} color={feature.color} />
-                    </View>
-                    <Text style={styles.featureTitle}>{feature.title}</Text>
-                    <Text style={styles.featureDescription}>{feature.description}</Text>
-                  </View>
-                </BlurView>
-              ))}
-            </View>
-          )}
-        </View>
 
         {/* How It Works Section */}
         <BlurView intensity={20} tint="light" style={[styles.section, styles.glassContainer]}>
@@ -320,35 +259,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1f2937',
     flex: 1,
-  },
-  featuresGrid: {
-    gap: 20,
-  },
-  featureCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  featureCardContent: {
-    padding: 20,
-  },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  featureTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 8,
-  },
-  featureDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
   },
   stepsContainer: {
     gap: 20,
