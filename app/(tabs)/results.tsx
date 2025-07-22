@@ -304,6 +304,7 @@ export default function ResultsScreen() {
               <View style={[styles.summaryIcon, { backgroundColor: '#10b98115' }]}>
                 <CheckCircle size={16} color="#10b981" />
               </View>
+              <Text style={styles.summaryCount}>{safetySummary.safe || 0}</Text>
               <Text style={styles.summaryLabel}>Safe</Text>
             </View>
             
@@ -311,6 +312,7 @@ export default function ResultsScreen() {
               <View style={[styles.summaryIcon, { backgroundColor: '#f59e0b15' }]}>
                 <AlertTriangle size={16} color="#f59e0b" />
               </View>
+              <Text style={styles.summaryCount}>{safetySummary.caution || 0}</Text>
               <Text style={styles.summaryLabel}>Caution</Text>
             </View>
             
@@ -318,6 +320,7 @@ export default function ResultsScreen() {
               <View style={[styles.summaryIcon, { backgroundColor: '#ef444415' }]}>
                 <XCircle size={16} color="#ef4444" />
               </View>
+              <Text style={styles.summaryCount}>{safetySummary.avoid || 0}</Text>
               <Text style={styles.summaryLabel}>Avoid</Text>
             </View>
           </View>
