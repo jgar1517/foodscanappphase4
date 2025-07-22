@@ -127,20 +127,11 @@ export default function ResultsScreen() {
     const IconComponent = getRatingIcon(ingredient.rating);
     const color = getRatingColor(ingredient.rating);
     
-    // Use personalized rating if available
-    const displayRating = ingredient.personalizedRating || ingredient.rating;
-    const displayColor = getRatingColor(displayRating);
-    const DisplayIconComponent = getRatingIcon(displayRating);
-    const isPersonalized = !!ingredient.personalizedRating;
-    
     return (
       <View key={ingredient.name} style={styles.ingredientCard}>
         <View style={styles.ingredientHeader}>
           <View style={styles.ingredientInfo}>
             <Text style={styles.ingredientName}>{ingredient.name}</Text>
-            {isPersonalized && (
-              <Text style={styles.personalizedLabel}>Personalized for your diet</Text>
-            )}
             <View style={styles.ingredientMeta}>
               <Text style={styles.ingredientPosition}>Position #{ingredient.position}</Text>
               <Text style={styles.ingredientConfidence}>
@@ -148,22 +139,10 @@ export default function ResultsScreen() {
               </Text>
             </View>
           </View>
-          <View style={styles.ratingContainer}>
-            {isPersonalized && ingredient.rating !== displayRating && (
-              <View style={[styles.originalRatingBadge, { backgroundColor: `${color}10` }]}>
-                <IconComponent size={12} color={color} />
-                <Text style={[styles.originalRatingText, { color }]}>
-                  {ingredient.rating}
-                </Text>
-              </View>
-            )}
-            <View style={[styles.ratingBadge, { backgroundColor: `${displayColor}15` }]}>
-              <DisplayIconComponent size={16} color={displayColor} />
-              <Text style={[styles.ratingText, { color: displayColor }]}>
-                {displayRating.charAt(0).toUpperCase() + displayRating.slice(1)}
-              </Text>
-            </View>
-          </View>
+          <View style={[styles.ratingBadge, { backgroundColor: `${color}15` }]}>
+            <IconComponent size={16} color={color} />
+            <Text style={[styles.ratingText, { color }]}>
+              {ingredient.rating.charAt(0).toUpperCase() + ingredient.rating.slice(1)}
             </Text>
           </View>
         </View>
@@ -529,12 +508,6 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 4,
   },
-  personalizedLabel: {
-    fontSize: 12,
-    color: '#10b981',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
   ingredientMeta: {
     flexDirection: 'row',
     gap: 12,
@@ -546,23 +519,6 @@ const styles = StyleSheet.create({
   ingredientConfidence: {
     fontSize: 12,
     color: '#6b7280',
-  },
-  ratingContainer: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
-  originalRatingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 12,
-    gap: 3,
-  },
-  originalRatingText: {
-    fontSize: 10,
-    fontWeight: '600',
-    textDecorationLine: 'line-through',
   },
   ratingBadge: {
     flexDirection: 'row',

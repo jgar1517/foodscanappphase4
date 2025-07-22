@@ -198,9 +198,8 @@ class IngredientService {
         const analysis = await this.analyzeIngredient(ingredient, i + 1);
         analyses.push(analysis);
 
-        // Count ratings for summary (use personalized rating if available)
-        const ratingToCount = analysis.personalizedRating || analysis.rating;
-        switch (ratingToCount) {
+        // Count ratings for summary
+        switch (analysis.rating) {
           case 'safe':
             safeCount++;
             break;
@@ -247,49 +246,25 @@ class IngredientService {
     const normalizedName = ingredientName.toLowerCase().trim();
     const ingredientInfo = this.findIngredientInfo(normalizedName);
 
-    // Get personalized rating based on user preferences
-    let personalizedRating: SafetyRating | undefined;
-    let personalizedExplanation = '';
-
     if (ingredientInfo) {
-      const personalization = await UserProfileService.getPersonalizedRating(
-        ingredientName,
-        ingredientInfo.safetyRating
-      );
-
-      if (personalization.isPersonalized) {
-        personalizedRating = personalization.rating;
-        personalizedExplanation = personalization.explanation;
-      }
-
       return {
         name: ingredientName,
         position,
         rating: ingredientInfo.safetyRating,
-        personalizedRating,
         confidence: ingredientInfo.confidence,
-        explanation: personalizedExplanation || ingredientInfo.explanation,
+        explanation: ingredientInfo.explanation,
         sources: ingredientInfo.sources,
         healthConcerns: ingredientInfo.healthConcerns || [],
         alternatives: ingredientInfo.alternatives || []
       };
     } else {
-      // Check if unknown ingredient should be avoided based on user preferences
-      const avoidanceInfo = await UserProfileService.shouldAvoidIngredient(ingredientName);
-      
-      if (avoidanceInfo.shouldAvoid) {
-        personalizedRating = 'avoid';
-        personalizedExplanation = `${avoidanceInfo.reason}. This ingredient is not in our database but conflicts with your dietary preferences.`;
-      }
-
       // Unknown ingredient - default to caution
       return {
         name: ingredientName,
         position,
         rating: 'caution',
-        personalizedRating,
         confidence: 50,
-        explanation: personalizedExplanation || 'This ingredient is not in our database. We recommend researching it further or consulting with a healthcare professional.',
+        explanation: 'This ingredient is not in our database. We recommend researching it further or consulting with a healthcare professional.',
         sources: ['Unknown'],
         healthConcerns: ['Unknown safety profile'],
         alternatives: []

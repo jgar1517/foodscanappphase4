@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import UserProfileService, { DietaryPreference, CustomAvoidance } from '@/services/userProfileService';
-import AddCustomIngredientModal from '@/components/AddCustomIngredientModal';
 import {
   View,
   Text,
@@ -14,6 +12,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { User, Settings, Heart, Shield, Star, FileText, CircleHelp as HelpCircle, LogOut, ChevronRight, Crown, Zap, Calendar, ChartBar as BarChart3 } from 'lucide-react-native';
 
+const dietaryOptions = [
+  { id: 'gluten-free', label: 'Gluten-Free', active: true },
+  { id: 'vegan', label: 'Vegan', active: false },
+  { id: 'vegetarian', label: 'Vegetarian', active: false },
+  { id: 'diabetic', label: 'Diabetic-Friendly', active: true },
+  { id: 'keto', label: 'Keto', active: false },
+  { id: 'paleo', label: 'Paleo', active: false },
+  { id: 'low-sodium', label: 'Low Sodium', active: false },
+  { id: 'dairy-free', label: 'Dairy-Free', active: false },
+];
+
+const customAvoidances = [
+  'Artificial colors',
+  'High fructose corn syrup',
+  'Sodium benzoate',
+];
+
 const userStats = {
   totalScans: 127,
   scansThisWeek: 8,
@@ -24,65 +39,14 @@ const userStats = {
 export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [dietaryPreferences, setDietaryPreferences] = useState<DietaryPreference[]>([]);
-  const [customAvoidances, setCustomAvoidances] = useState<CustomAvoidance[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [profileStats, setProfileStats] = useState({
-    activePreferences: 0,
-    customAvoidances: 0,
-    totalRestrictedIngredients: 0
-  });
-  const [showAddIngredientModal, setShowAddIngredientModal] = useState(false);
+  const [dietaryPreferences, setDietaryPreferences] = useState(dietaryOptions);
 
-  // Load user profile data on component mount
-  React.useEffect(() => {
-    loadProfileData();
-  }, []);
-
-  const loadProfileData = async () => {
-    try {
-      setLoading(true);
-      const [preferences, avoidances, stats] = await Promise.all([
-        UserProfileService.getDietaryPreferences(),
-        UserProfileService.getCustomAvoidances(),
-        UserProfileService.getProfileStatistics()
-      ]);
-      
-      setDietaryPreferences(preferences);
-      setCustomAvoidances(avoidances);
-      setProfileStats(stats);
-    } catch (error) {
-      console.error('Failed to load profile data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleDietaryPreference = async (preferenceName: string) => {
-    try {
-      const updatedPreferences = await UserProfileService.toggleDietaryPreference(preferenceName);
-      setDietaryPreferences(updatedPreferences);
-      
-      // Update stats
-      const stats = await UserProfileService.getProfileStatistics();
-      setProfileStats(stats);
-    } catch (error) {
-      console.error('Failed to toggle dietary preference:', error);
-    }
-  };
-
-  const removeCustomAvoidance = async (avoidanceId: string) => {
-    try {
-      await UserProfileService.removeCustomAvoidance(avoidanceId);
-      const updatedAvoidances = await UserProfileService.getCustomAvoidances();
-      setCustomAvoidances(updatedAvoidances);
-      
-      // Update stats
-      const stats = await UserProfileService.getProfileStatistics();
-      setProfileStats(stats);
-    } catch (error) {
-      console.error('Failed to remove custom avoidance:', error);
-    }
+  const toggleDietaryPreference = (id: string) => {
+    setDietaryPreferences(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, active: !item.active } : item
+      )
+    );
   };
 
   const MenuSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -153,26 +117,26 @@ export default function ProfileScreen() {
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <Heart size={20} color="#10b981" />
+                <Zap size={20} color="#10b981" />
               </View>
-              <Text style={styles.statValue}>{profileStats.activePreferences}</Text>
-              <Text style={styles.statLabel}>Active Diets</Text>
+              <Text style={styles.statValue}>{userStats.totalScans}</Text>
+              <Text style={styles.statLabel}>Total Scans</Text>
             </View>
             
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <Shield size={20} color="#3b82f6" />
+                <Calendar size={20} color="#3b82f6" />
               </View>
-              <Text style={styles.statValue}>{profileStats.customAvoidances}</Text>
-              <Text style={styles.statLabel}>Custom Blocks</Text>
+              <Text style={styles.statValue}>{userStats.scansThisWeek}</Text>
+              <Text style={styles.statLabel}>This Week</Text>
             </View>
             
             <View style={styles.statCard}>
               <View style={styles.statIcon}>
-                <Zap size={20} color="#f59e0b" />
+                <Shield size={20} color="#f59e0b" />
               </View>
-              <Text style={styles.statValue}>{profileStats.totalRestrictedIngredients}</Text>
-              <Text style={styles.statLabel}>Blocked Items</Text>
+              <Text style={styles.statValue}>{userStats.safetyScore}</Text>
+              <Text style={styles.statLabel}>Safety Score</Text>
             </View>
           </View>
         </View>
@@ -195,21 +159,15 @@ export default function ProfileScreen() {
 
         {/* Dietary Preferences */}
         <MenuSection title="Dietary Preferences">
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Loading preferences...</Text>
-            </View>
-          ) : (
-            <>
           <View style={styles.dietaryGrid}>
             {dietaryPreferences.map((preference) => (
               <TouchableOpacity
-                key={preference.name}
+                key={preference.id}
                 style={[
                   styles.dietaryChip,
                   preference.active && styles.dietaryChipActive,
                 ]}
-                onPress={() => toggleDietaryPreference(preference.name)}
+                onPress={() => toggleDietaryPreference(preference.id)}
               >
                 <Text
                   style={[
@@ -225,32 +183,15 @@ export default function ProfileScreen() {
           
           <View style={styles.customAvoidances}>
             <Text style={styles.customAvoidancesTitle}>Custom Ingredients to Avoid:</Text>
-            {customAvoidances.length > 0 ? (
-              customAvoidances.map((avoidance) => (
-                <TouchableOpacity 
-                  key={avoidance.id} 
-                  style={styles.avoidanceItem}
-                  onPress={() => removeCustomAvoidance(avoidance.id)}
-                >
-                  <Text style={styles.avoidanceText}>• {avoidance.ingredientName}</Text>
-                  <Text style={styles.avoidanceReason}>({avoidance.reason})</Text>
-                  <Text style={styles.removeText}>Tap to remove</Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noAvoidancesText}>No custom ingredients blocked</Text>
-            )}
+            {customAvoidances.map((item, index) => (
+              <View key={index} style={styles.avoidanceItem}>
+                <Text style={styles.avoidanceText}>• {item}</Text>
               </View>
             ))}
-            <TouchableOpacity 
-              style={styles.addAvoidanceButton}
-              onPress={() => setShowAddIngredientModal(true)}
-            >
+            <TouchableOpacity style={styles.addAvoidanceButton}>
               <Text style={styles.addAvoidanceText}>+ Add Custom Ingredient</Text>
             </TouchableOpacity>
           </View>
-            </>
-          )}
         </MenuSection>
 
         {/* Account Settings */}
@@ -367,12 +308,6 @@ export default function ProfileScreen() {
           </Text>
         </View>
       </ScrollView>
-      
-      <AddCustomIngredientModal
-        visible={showAddIngredientModal}
-        onClose={() => setShowAddIngredientModal(false)}
-        onIngredientAdded={loadProfileData}
-      />
     </SafeAreaView>
   );
 }
@@ -646,32 +581,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9ca3af',
     textAlign: 'center',
-  },
-  loadingContainer: {
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  avoidanceReason: {
-    fontSize: 12,
-    color: '#9ca3af',
-    fontStyle: 'italic',
-    marginLeft: 12,
-  },
-  removeText: {
-    fontSize: 10,
-    color: '#ef4444',
-    marginLeft: 12,
-    marginTop: 2,
-  },
-  noAvoidancesText: {
-    fontSize: 14,
-    color: '#9ca3af',
-    fontStyle: 'italic',
-    marginBottom: 8,
   },
 });
