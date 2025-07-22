@@ -241,14 +241,16 @@ export default function ProfileScreen() {
               <Text style={styles.noAvoidancesText}>No custom ingredients blocked</Text>
             )}
               </View>
-            </>
-            )}
+            ))}
             <TouchableOpacity 
               style={styles.addAvoidanceButton}
               onPress={() => setShowAddIngredientModal(true)}
             >
               <Text style={styles.addAvoidanceText}>+ Add Custom Ingredient</Text>
             </TouchableOpacity>
+          </View>
+            </>
+          )}
         </MenuSection>
 
         {/* Account Settings */}
