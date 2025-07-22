@@ -248,9 +248,6 @@ export default function ProfileScreen() {
             >
               <Text style={styles.addAvoidanceText}>+ Add Custom Ingredient</Text>
             </TouchableOpacity>
-          </View>
-            </>
-          )}
         </MenuSection>
 
         {/* Account Settings */}
