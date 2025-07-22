@@ -73,20 +73,16 @@ export default function HomeScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#9333ea', '#4f46e5']}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <ImageBackground
-            source={require('@/assets/images/image.png')}
+          <LinearGradient
+            colors={['#9333ea', '#4f46e5']}
             style={styles.heroBackground}
-            resizeMode="cover"
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           >
             <View style={styles.heroContent}>
               <Text style={styles.heroTitle}>
@@ -107,7 +103,7 @@ export default function HomeScreen() {
                 <ChevronRight size={20} color="#10b981" />
               </TouchableOpacity>
             </View>
-          </ImageBackground>
+          </LinearGradient>
         </View>
 
         {/* Features Section */}
@@ -215,13 +211,14 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   safeArea: {
     flex: 1,
