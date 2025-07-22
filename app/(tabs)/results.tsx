@@ -164,6 +164,7 @@ export default function ResultsScreen() {
               </Text>
             </View>
           </View>
+            </Text>
           </View>
         </View>
         
