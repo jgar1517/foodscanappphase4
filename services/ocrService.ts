@@ -255,6 +255,7 @@ class OCRService {
       console.log('Falling back to mock OCR data...');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Return mock Google Vision API response structure
       return {
         responses: [{
           textAnnotations: [
