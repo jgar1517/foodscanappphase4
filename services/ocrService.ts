@@ -66,7 +66,14 @@ class OCRService {
     
     try {
       // Convert image to base64
-      const base64Image = await this.convertImageToBase64(imageUri);
+      let base64Image: string;
+      try {
+        base64Image = await this.convertImageToBase64(imageUri);
+      } catch (conversionError) {
+        console.warn('Image conversion failed, using fallback OCR:', conversionError);
+        // If image conversion fails, fall back to mock OCR immediately
+        return await this.simulateOCR(imageUri);
+      }
       
       // Note: In production, this API call should go through your backend
       // to keep the API key secure. For now, we'll simulate the response.
@@ -93,6 +100,15 @@ class OCRService {
       // For now, we'll use enhanced mock data
       console.log('Using Tesseract.js for web OCR...');
       
+      // Validate that we can access the image before proceeding
+      try {
+        await this.convertImageToBase64(imageUri);
+        console.log('Image conversion successful, proceeding with Tesseract simulation');
+      } catch (conversionError) {
+        console.warn('Image conversion failed for Tesseract, using fallback:', conversionError);
+        return await this.simulateOCR(imageUri);
+      }
+      
       // Simulate Tesseract processing
       await new Promise(resolve => setTimeout(resolve, 3000));
       
@@ -111,29 +127,68 @@ class OCRService {
    */
   private async convertImageToBase64(imageUri: string): Promise<string> {
     try {
-      if (Platform.OS === 'web') {
-        // For web, use fetch and FileReader
-        const response = await fetch(imageUri);
-        const blob = await response.blob();
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const base64 = (reader.result as string).split(',')[1];
-            resolve(base64);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } else {
-        // For React Native, use expo-file-system
-        const { FileSystem } = require('expo-file-system');
-        return await FileSystem.readAsStringAsync(imageUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+      // Try web-based conversion first (works in most environments)
+      if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+        return await this.convertImageToBase64Web(imageUri);
       }
+      
+      // Try native file system for iOS/Android
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        return await this.convertImageToBase64Native(imageUri);
+      }
+      
+      // Fallback to web method for other platforms
+      return await this.convertImageToBase64Web(imageUri);
     } catch (error) {
       console.error('Failed to convert image to base64:', error);
-      throw error;
+      // If all methods fail, return a placeholder or throw
+      throw new Error('Unable to convert image to base64 in current environment');
+    }
+  }
+
+  /**
+   * Convert image to base64 using web APIs
+   */
+  private async convertImageToBase64Web(imageUri: string): Promise<string> {
+    try {
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Remove data URL prefix to get just the base64 string
+          const base64 = result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = () => reject(new Error('Failed to read image as base64'));
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Web-based image conversion failed:', error);
+      throw new Error('Web image conversion failed');
+    }
+  }
+
+  /**
+   * Convert image to base64 using React Native file system
+   */
+  private async convertImageToBase64Native(imageUri: string): Promise<string> {
+    try {
+      // Dynamically import expo-file-system to avoid issues in non-native environments
+      const FileSystem = await import('expo-file-system');
+      
+      if (!FileSystem.default || !FileSystem.default.readAsStringAsync) {
+        throw new Error('expo-file-system not available');
+      }
+      
+      return await FileSystem.default.readAsStringAsync(imageUri, {
+        encoding: FileSystem.default.EncodingType.Base64,
+      });
+    } catch (error) {
+      console.error('Native image conversion failed:', error);
+      throw new Error('Native image conversion failed');
     }
   }
 
