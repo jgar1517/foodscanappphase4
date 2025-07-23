@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useRef } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import ScanService, { ScanSession } from '@/services/scanService';
 import { AnalysisResult } from '@/services/ingredientService';
@@ -61,58 +60,42 @@ export default function ResultsScreen() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isMounted = useRef(true);
   
   const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
 
   // Load scan results on component mount
   React.useEffect(() => {
-    isMounted.current = true;
     loadScanResults();
-    
-    return () => {
-      isMounted.current = false;
-    };
   }, [sessionId]);
 
   const loadScanResults = async () => {
     if (!sessionId) {
-      if (isMounted.current) {
-        setError('No scan session found');
-        setLoading(false);
-      }
+      setError('No scan session found');
+      setLoading(false);
       return;
     }
 
     try {
       const session = await ScanService.getScanSession(sessionId);
       if (!session) {
-        if (isMounted.current) {
-          setError('Scan session not found');
-          setLoading(false);
-        }
+        setError('Scan session not found');
+        setLoading(false);
         return;
       }
 
       if (session.status !== 'completed' || !session.analysisResult) {
-        if (isMounted.current) {
-          setError('Scan analysis not completed');
-          setLoading(false);
-        }
+        setError('Scan analysis not completed');
+        setLoading(false);
         return;
       }
 
-      if (isMounted.current) {
-        setScanSession(session);
-        setAnalysisResult(session.analysisResult);
-        setLoading(false);
-      }
+      setScanSession(session);
+      setAnalysisResult(session.analysisResult);
+      setLoading(false);
     } catch (err) {
       console.error('Failed to load scan results:', err);
-      if (isMounted.current) {
-        setError('Failed to load scan results');
-        setLoading(false);
-      }
+      setError('Failed to load scan results');
+      setLoading(false);
     }
   };
   
@@ -202,6 +185,74 @@ export default function ResultsScreen() {
       </View>
     );
   };
+
+  const renderRecommendations = () => (
+    <View style={styles.tabContent}>
+      <Text style={styles.sectionTitle}>Healthier Alternatives</Text>
+      {mockScanResult.recommendations.map((rec) => (
+        <View key={rec.rank} style={styles.recommendationCard}>
+          <Image source={{ uri: rec.imageUrl }} style={styles.recommendationImage} />
+          <View style={styles.recommendationContent}>
+            <View style={styles.recommendationHeader}>
+              <Text style={styles.recommendationName}>{rec.productName}</Text>
+              <View style={styles.recommendationScore}>
+                <Star size={12} color="#f59e0b" fill="#f59e0b" />
+                <Text style={styles.scoreValue}>{rec.safetyScore}</Text>
+              </View>
+            </View>
+            <Text style={styles.recommendationBrand}>{rec.brand}</Text>
+            <Text style={styles.recommendationDescription}>{rec.description}</Text>
+            <Text style={styles.recommendationReason}>{rec.reason}</Text>
+            
+            <View style={styles.recommendationFooter}>
+              <Text style={styles.recommendationPrice}>${rec.price}</Text>
+              <TouchableOpacity style={styles.buyButton}>
+                <ShoppingCart size={14} color="#10b981" />
+                <Text style={styles.buyButtonText}>Buy on {rec.retailer}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
+  const renderRecipes = () => (
+    <View style={styles.tabContent}>
+      <Text style={styles.sectionTitle}>Homemade Alternatives</Text>
+      {mockScanResult.recipes.map((recipe, index) => (
+        <View key={index} style={styles.recipeCard}>
+          <Image source={{ uri: recipe.imageUrl }} style={styles.recipeImage} />
+          <View style={styles.recipeContent}>
+            <Text style={styles.recipeName}>{recipe.name}</Text>
+            <Text style={styles.recipeDescription}>{recipe.description}</Text>
+            
+            <View style={styles.recipeDetails}>
+              <View style={styles.recipeDetail}>
+                <Clock size={14} color="#6b7280" />
+                <Text style={styles.recipeDetailText}>{recipe.prepTime} min</Text>
+              </View>
+              <View style={styles.recipeDetail}>
+                <Lightbulb size={14} color="#6b7280" />
+                <Text style={styles.recipeDetailText}>{recipe.difficulty}</Text>
+              </View>
+            </View>
+            
+            <View style={styles.ingredientsList}>
+              {recipe.ingredients.map((ingredient, idx) => (
+                <Text key={idx} style={styles.recipeIngredient}>• {ingredient}</Text>
+              ))}
+            </View>
+            
+            <TouchableOpacity style={styles.viewRecipeButton}>
+              <Text style={styles.viewRecipeText}>View Full Recipe</Text>
+              <ChevronRight size={14} color="#10b981" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
