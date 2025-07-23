@@ -184,6 +184,15 @@ export default function ResultsScreen() {
         </View>
       </View>
     );
+  };
+
+  const renderRecommendations = () => (
+    <View style={styles.tabContent}>
+      <Text style={styles.sectionTitle}>Healthier Alternatives</Text>
+      {mockScanResult.recommendations.map((rec, index) => (
+        <View key={index} style={styles.recommendationCard}>
+          <Image source={{ uri: rec.imageUrl }} style={styles.recommendationImage} />
+          <View style={styles.recommendationContent}>
             <View style={styles.recommendationHeader}>
               <Text style={styles.recommendationName}>{rec.productName}</Text>
               <View style={styles.recommendationScore}>
