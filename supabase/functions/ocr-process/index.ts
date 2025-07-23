@@ -85,7 +85,7 @@ serve(async (req) => {
 
     // Call Google Vision API
     const googleResponse = await fetch(
-      `${GOOGLE_VISION_API_URL}?key=${AIzaSyBqW1hJTZSSWH3xchRQ3rrmqkVbSHts3pw}`,
+      `${GOOGLE_VISION_API_URL}?key=${GOOGLE_VISION_API_KEY}`,
       {
         method: 'POST',
         headers: {
