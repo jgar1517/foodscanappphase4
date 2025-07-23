@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Camera, FlipHorizontal, Image as ImageIcon, Zap, X, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import ScanService from '@/services/scanService';
+import OCRService from '@/services/ocrService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -101,7 +102,38 @@ export default function ScanScreen() {
     setIsProcessing(true);
     
     try {
+      // Validate image quality first
+      console.log('Validating image quality...');
+      const qualityCheck = await OCRService.validateImageQuality(capturedImage);
+      
+      if (!qualityCheck.isValid) {
+        Alert.alert(
+          'Image Quality Warning',
+          `${qualityCheck.issues.join(', ')}. ${qualityCheck.suggestions.join(' ')} Would you like to continue anyway?`,
+          [
+            { text: 'Retake Photo', onPress: () => setIsProcessing(false) },
+            { text: 'Continue', onPress: () => processScanWithImage() }
+          ]
+        );
+        return;
+      }
+      
+      await processScanWithImage();
+    } catch (error) {
+      console.error('Image processing failed:', error);
+      setIsProcessing(false);
+      Alert.alert(
+        'Processing Failed', 
+        'We couldn\'t process your image. Please try again with better lighting or a clearer photo.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  const processScanWithImage = async () => {
+    try {
       // Process the scan using our OCR and ingredient analysis services
+      console.log('Starting scan processing...');
       const result = await ScanService.processScan(capturedImage);
       
       console.log('Scan completed:', result);
