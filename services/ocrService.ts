@@ -255,6 +255,7 @@ class OCRService {
       console.log('Falling back to mock OCR data...');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Return mock Google Vision API response structure
       return {
         responses: [{
           textAnnotations: [
@@ -276,29 +277,6 @@ class OCRService {
         }]
       };
     }
-  }
-    
-    // Return mock Google Vision API response structure
-    return {
-      responses: [{
-        textAnnotations: [
-          {
-            description: "Ingredients: Water, Organic Cane Sugar, Natural Flavors, Citric Acid, Sodium Benzoate (Preservative), Ascorbic Acid (Vitamin C), Artificial Color Red 40",
-            boundingPoly: {
-              vertices: [
-                { x: 50, y: 100 },
-                { x: 350, y: 100 },
-                { x: 350, y: 150 },
-                { x: 50, y: 150 }
-              ]
-            }
-          }
-        ],
-        fullTextAnnotation: {
-          text: "Ingredients: Water, Organic Cane Sugar, Natural Flavors, Citric Acid, Sodium Benzoate (Preservative), Ascorbic Acid (Vitamin C), Artificial Color Red 40"
-        }
-      }]
-    };
   }
 
   /**
