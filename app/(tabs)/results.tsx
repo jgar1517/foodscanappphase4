@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import ScanService, { ScanSession } from '@/services/scanService';
 import { AnalysisResult } from '@/services/ingredientService';
+import RecommendationService, { RecommendationResult } from '@/services/recommendationService';
 import {
   View,
   Text,
@@ -59,6 +60,7 @@ export default function ResultsScreen() {
   const [activeTab, setActiveTab] = useState('ingredients');
   const [scanSession, setScanSession] = useState<ScanSession | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [recommendations, setRecommendations] = useState<RecommendationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isMounted = useRef(true);
@@ -105,6 +107,21 @@ export default function ResultsScreen() {
       if (isMounted.current) {
         setScanSession(session);
         setAnalysisResult(session.analysisResult);
+        
+        // Generate recommendations
+        try {
+          const recommendationResult = await RecommendationService.generateRecommendations(
+            session,
+            session.analysisResult
+          );
+          if (isMounted.current) {
+            setRecommendations(recommendationResult);
+          }
+        } catch (error) {
+          console.error('Failed to generate recommendations:', error);
+          // Don't fail the whole screen if recommendations fail
+        }
+        
         setLoading(false);
       }
     } catch (err) {
@@ -302,24 +319,97 @@ export default function ResultsScreen() {
         {activeTab === 'alternatives' && (
           <View style={styles.tabContent}>
             <Text style={styles.sectionTitle}>Healthier Alternatives</Text>
-            <View style={styles.comingSoonContainer}>
-              <Text style={styles.comingSoonText}>Product recommendations coming soon!</Text>
-              <Text style={styles.comingSoonSubtext}>
-                We're working on integrating with retailers to bring you the best alternative products.
-              </Text>
-            </View>
+            {recommendations && recommendations.products.length > 0 ? (
+              <>
+                <Text style={styles.recommendationReason}>{recommendations.recommendationReason}</Text>
+                {recommendations.products.map((product) => (
+                  <View key={product.id} style={styles.recommendationCard}>
+                    <Image source={{ uri: product.imageUrl }} style={styles.recommendationImage} />
+                    <View style={styles.recommendationContent}>
+                      <View style={styles.recommendationHeader}>
+                        <Text style={styles.recommendationName}>{product.productName}</Text>
+                        <View style={styles.recommendationScore}>
+                          <Text style={styles.scoreValue}>{product.safetyScore}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.recommendationBrand}>{product.brand}</Text>
+                      <Text style={styles.recommendationDescription}>{product.description}</Text>
+                      <Text style={styles.recommendationReason}>{product.recommendationReason}</Text>
+                      <View style={styles.recommendationFooter}>
+                        <Text style={styles.recommendationPrice}>${product.price}</Text>
+                        <TouchableOpacity style={styles.buyButton}>
+                          <Text style={styles.buyButtonText}>View Product</Text>
+                          <ExternalLink size={12} color="#10b981" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </>
+            ) : (
+              <View style={styles.comingSoonContainer}>
+                <Text style={styles.comingSoonText}>Loading recommendations...</Text>
+                <Text style={styles.comingSoonSubtext}>
+                  Finding the best alternative products for you.
+                </Text>
+              </View>
+            )}
           </View>
         )}
         
         {activeTab === 'recipes' && (
           <View style={styles.tabContent}>
             <Text style={styles.sectionTitle}>Homemade Alternatives</Text>
-            <View style={styles.comingSoonContainer}>
-              <Text style={styles.comingSoonText}>Recipe suggestions coming soon!</Text>
-              <Text style={styles.comingSoonSubtext}>
-                We're developing a recipe engine to suggest healthier homemade alternatives.
-              </Text>
-            </View>
+            {recommendations && recommendations.recipes.length > 0 ? (
+              <>
+                {recommendations.recipes.map((recipe) => (
+                  <View key={recipe.id} style={styles.recipeCard}>
+                    <Image source={{ uri: recipe.imageUrl }} style={styles.recipeImage} />
+                    <View style={styles.recipeContent}>
+                      <Text style={styles.recipeName}>{recipe.recipeName}</Text>
+                      <Text style={styles.recipeDescription}>{recipe.description}</Text>
+                      <View style={styles.recipeDetails}>
+                        <View style={styles.recipeDetail}>
+                          <Clock size={12} color="#6b7280" />
+                          <Text style={styles.recipeDetailText}>{recipe.prepTime + recipe.cookTime} min</Text>
+                        </View>
+                        <View style={styles.recipeDetail}>
+                          <Star size={12} color="#6b7280" />
+                          <Text style={styles.recipeDetailText}>{recipe.difficultyLevel}</Text>
+                        </View>
+                        <View style={styles.recipeDetail}>
+                          <Text style={styles.recipeDetailText}>{recipe.servings} servings</Text>
+                        </View>
+                      </View>
+                      <View style={styles.ingredientsList}>
+                        <Text style={styles.recipeDetailText}>Ingredients:</Text>
+                        {recipe.ingredients.slice(0, 3).map((ingredient, index) => (
+                          <Text key={index} style={styles.recipeIngredient}>
+                            • {ingredient.amount} {ingredient.unit} {ingredient.name}
+                          </Text>
+                        ))}
+                        {recipe.ingredients.length > 3 && (
+                          <Text style={styles.recipeIngredient}>
+                            • and {recipe.ingredients.length - 3} more...
+                          </Text>
+                        )}
+                      </View>
+                      <TouchableOpacity style={styles.viewRecipeButton}>
+                        <Text style={styles.viewRecipeText}>View Full Recipe</Text>
+                        <ChevronRight size={16} color="#10b981" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </>
+            ) : (
+              <View style={styles.comingSoonContainer}>
+                <Text style={styles.comingSoonText}>Loading recipes...</Text>
+                <Text style={styles.comingSoonSubtext}>
+                  Finding healthy homemade alternatives for you.
+                </Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>
@@ -636,11 +726,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    backgroundColor: '#10b98115',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   scoreValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#10b981',
   },
   recommendationBrand: {
     fontSize: 14,
@@ -655,9 +749,10 @@ const styles = StyleSheet.create({
   },
   recommendationReason: {
     fontSize: 12,
-    color: '#10b981',
+    color: '#6b7280',
     fontWeight: '600',
     marginBottom: 12,
+    fontStyle: 'italic',
   },
   recommendationFooter: {
     flexDirection: 'row',
