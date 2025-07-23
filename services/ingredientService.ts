@@ -191,30 +191,31 @@ class IngredientService {
     const startTime = Date.now();
     
     try {
+      // Use AI-enhanced analysis for better accuracy
+      const aiAnalysis = await AIAnalysisService.analyzeIngredientsBatch(ingredients);
+      
       const analyses: IngredientAnalysis[] = [];
 
       for (let i = 0; i < ingredients.length; i++) {
         const ingredient = ingredients[i];
-        const analysis = await this.analyzeIngredient(ingredient, i + 1);
+        const aiIngredientAnalysis = aiAnalysis.ingredients[i];
+        const analysis = await this.analyzeIngredient(ingredient, i + 1, aiIngredientAnalysis);
         analyses.push(analysis);
       }
 
-      // For Phase 2, we'll skip personalization and use basic analysis
-      const safeCount = analyses.filter(i => i.rating === 'safe').length;
-      const cautionCount = analyses.filter(i => i.rating === 'caution').length;
-      const avoidCount = analyses.filter(i => i.rating === 'avoid').length;
+      // Apply personalization to the analysis
+      const personalizedResult = await PersonalizationService.personalizeAnalysis(analyses);
       
-      // Calculate overall safety score
-      const total = analyses.length;
-      const overallSafetyScore = total > 0 
-        ? Math.round(((safeCount * 100) + (cautionCount * 60) + (avoidCount * 20)) / total)
-        : 100;
+      // Count personalized ratings for summary
+      const safeCount = personalizedResult.ingredients.filter(i => i.rating === 'safe').length;
+      const cautionCount = personalizedResult.ingredients.filter(i => i.rating === 'caution').length;
+      const avoidCount = personalizedResult.ingredients.filter(i => i.rating === 'avoid').length;
 
       const processingTime = Date.now() - startTime;
 
       return {
-        ingredients: analyses,
-        overallSafetyScore,
+        ingredients: personalizedResult.ingredients,
+        overallSafetyScore: personalizedResult.personalizedScore,
         processingTime,
         summary: {
           safe: safeCount,
@@ -233,13 +234,28 @@ class IngredientService {
    */
   private async analyzeIngredient(
     ingredientName: string, 
-    position: number
+    position: number, 
+    aiAnalysis?: any
   ): Promise<IngredientAnalysis> {
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 100));
 
     const normalizedName = ingredientName.toLowerCase().trim();
     const ingredientInfo = this.findIngredientInfo(normalizedName);
+
+    // Use AI analysis if available and more confident
+    if (aiAnalysis && aiAnalysis.confidence > 70) {
+      return {
+        name: ingredientName,
+        position,
+        rating: aiAnalysis.safetyRating,
+        confidence: aiAnalysis.confidence,
+        explanation: aiAnalysis.reasoning,
+        sources: aiAnalysis.sources,
+        healthConcerns: aiAnalysis.healthImpacts,
+        alternatives: aiAnalysis.alternatives
+      };
+    }
 
     if (ingredientInfo) {
       return {
@@ -258,11 +274,11 @@ class IngredientService {
         name: ingredientName,
         position,
         rating: 'caution',
-        confidence: 50,
-        explanation: 'This ingredient is not in our database. We recommend researching it further or consulting with a healthcare professional.',
-        sources: ['Unknown'],
-        healthConcerns: ['Unknown safety profile'],
-        alternatives: []
+        confidence: aiAnalysis?.confidence || 50,
+        explanation: aiAnalysis?.reasoning || 'This ingredient is not in our database. We recommend researching it further or consulting with a healthcare professional.',
+        sources: aiAnalysis?.sources || ['Unknown'],
+        healthConcerns: aiAnalysis?.healthImpacts || ['Unknown safety profile'],
+        alternatives: aiAnalysis?.alternatives || []
       };
     }
   }

@@ -1,5 +1,4 @@
 import * as ImagePicker from 'expo-image-picker';
-import { Platform } from 'react-native';
 
 // OCR Service Interface
 export interface OCRResult {

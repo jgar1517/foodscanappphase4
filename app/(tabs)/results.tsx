@@ -143,17 +143,30 @@ export default function ResultsScreen() {
   const renderIngredientItem = (ingredient: any) => {
     const IconComponent = getRatingIcon(ingredient.rating);
     const color = getRatingColor(ingredient.rating);
+    const isPersonalized = ingredient.isPersonalized;
     
     return (
       <View key={ingredient.name} style={styles.ingredientCard}>
         <View style={styles.ingredientHeader}>
           <View style={styles.ingredientInfo}>
-            <Text style={styles.ingredientName}>{ingredient.name}</Text>
+            <View style={styles.ingredientNameRow}>
+              <Text style={styles.ingredientName}>{ingredient.name}</Text>
+              {isPersonalized && (
+                <View style={styles.personalizedBadge}>
+                  <Text style={styles.personalizedBadgeText}>✨</Text>
+                </View>
+              )}
+            </View>
             <View style={styles.ingredientMeta}>
               <Text style={styles.ingredientPosition}>Position #{ingredient.position}</Text>
               <Text style={styles.ingredientConfidence}>
                 {ingredient.confidence}% confidence
               </Text>
+              {isPersonalized && ingredient.originalRating !== ingredient.rating && (
+                <Text style={styles.originalRating}>
+                  Originally: {ingredient.originalRating}
+                </Text>
+              )}
             </View>
           </View>
           <View style={[styles.ratingBadge, { backgroundColor: `${color}15` }]}>
@@ -166,22 +179,12 @@ export default function ResultsScreen() {
         
         <Text style={styles.ingredientExplanation}>{ingredient.explanation}</Text>
         
-        {/* Show health concerns if any */}
-        {ingredient.healthConcerns && ingredient.healthConcerns.length > 0 && (
-          <View style={styles.healthConcerns}>
-            <Text style={styles.healthConcernsTitle}>Health Concerns:</Text>
-            {ingredient.healthConcerns.map((concern: string, index: number) => (
-              <Text key={index} style={styles.healthConcern}>• {concern}</Text>
-            ))}
-          </View>
-        )}
-        
-        {/* Show alternatives if any */}
-        {ingredient.alternatives && ingredient.alternatives.length > 0 && (
-          <View style={styles.alternatives}>
-            <Text style={styles.alternativesTitle}>Healthier Alternatives:</Text>
-            {ingredient.alternatives.map((alternative: string, index: number) => (
-              <Text key={index} style={styles.alternative}>• {alternative}</Text>
+        {/* Show personalization reasons if applicable */}
+        {isPersonalized && ingredient.personalizationReasons && ingredient.personalizationReasons.length > 0 && (
+          <View style={styles.personalizationReasons}>
+            <Text style={styles.personalizationReasonsTitle}>Personalized because:</Text>
+            {ingredient.personalizationReasons.map((reason: string, index: number) => (
+              <Text key={index} style={styles.personalizationReason}>• {reason}</Text>
             ))}
           </View>
         )}
@@ -222,6 +225,15 @@ export default function ResultsScreen() {
         {/* Safety Overview */}
         <View style={styles.overviewSection}>
           <SafetyScoreCircle score={analysisResult.overallSafetyScore} />
+          
+          {/* Show personalization indicator if applicable */}
+          {analysisResult.ingredients.some((ing: any) => ing.isPersonalized) && (
+            <View style={styles.personalizationBanner}>
+              <Text style={styles.personalizationText}>
+                ✨ Results personalized for your dietary preferences
+              </Text>
+            </View>
+          )}
           
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
@@ -496,6 +508,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 4,
+    flex: 1,
+  },
+  personalizedBadge: {
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#0ea5e9',
+  },
+  personalizedBadgeText: {
+    fontSize: 10,
+    color: '#0369a1',
   },
   ingredientMeta: {
     flexDirection: 'row',
@@ -508,6 +533,12 @@ const styles = StyleSheet.create({
   ingredientConfidence: {
     fontSize: 12,
     color: '#6b7280',
+  },
+  originalRating: {
+    fontSize: 11,
+    color: '#9ca3af',
+    fontStyle: 'italic',
+    textTransform: 'capitalize',
   },
   ratingBadge: {
     flexDirection: 'row',
@@ -527,42 +558,23 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 12,
   },
-  healthConcerns: {
+  personalizationReasons: {
     backgroundColor: '#f0f9ff',
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#f59e0b',
+    borderLeftColor: '#0ea5e9',
   },
-  healthConcernsTitle: {
+  personalizationReasonsTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#d97706',
+    color: '#0369a1',
     marginBottom: 4,
   },
-  healthConcern: {
+  personalizationReason: {
     fontSize: 12,
-    color: '#d97706',
-    lineHeight: 16,
-  },
-  alternatives: {
-    backgroundColor: '#f0fdf4',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: '#10b981',
-  },
-  alternativesTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#059669',
-    marginBottom: 4,
-  },
-  alternative: {
-    fontSize: 12,
-    color: '#059669',
+    color: '#0369a1',
     lineHeight: 16,
   },
   sourcesContainer: {

@@ -101,23 +101,21 @@ export default function ScanScreen() {
     setIsProcessing(true);
     
     try {
-      console.log('Starting scan processing...');
-      
       // Process the scan using our OCR and ingredient analysis services
       const result = await ScanService.processScan(capturedImage);
+      
+      console.log('Scan completed:', result);
       
       // Navigate to results with the scan session ID
       setIsProcessing(false);
       setCapturedImage(null);
-      
-      console.log('Scan completed, navigating to results...');
       router.push(`/results?sessionId=${result.session.id}`);
     } catch (error) {
       console.error('Scan processing failed:', error);
       setIsProcessing(false);
       Alert.alert(
         'Processing Failed', 
-        'We couldn\'t process your image. Please try again with better lighting or a clearer photo. Error: ' + (error instanceof Error ? error.message : 'Unknown error'),
+        'We couldn\'t process your image. Please try again with better lighting or a clearer photo.',
         [{ text: 'OK' }]
       );
     }
