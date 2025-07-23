@@ -200,11 +200,9 @@ export default function ResultsScreen() {
                 <Text style={styles.scoreValue}>{rec.safetyScore}</Text>
               </View>
             </View>
-            <View>
-              <Text style={styles.recommendationBrand}>{rec.brand}</Text>
-              <Text style={styles.recommendationDescription}>{rec.description}</Text>
-              <Text style={styles.recommendationReason}>{rec.reason}</Text>
-            </View>
+            <Text style={styles.recommendationBrand}>{rec.brand}</Text>
+            <Text style={styles.recommendationDescription}>{rec.description}</Text>
+            <Text style={styles.recommendationReason}>{rec.reason}</Text>
             
             <View style={styles.recommendationFooter}>
               <Text style={styles.recommendationPrice}>${rec.price}</Text>
