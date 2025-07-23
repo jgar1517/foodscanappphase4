@@ -86,7 +86,8 @@ class OCRService {
       headers: {
         'Content-Type': 'application/json',
         // ADD THIS LINE:
-        'Authorization': `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52cGhrcGh4Y2VzZWZkdGpuZ21kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzEzMjQsImV4cCI6MjA2ODgwNzMyNH0.TW_mL_p6KmE97fTJ-QBXIZaD1iarH_39ScYpE3gMtuo`, // Replace YOUR_SUPABASE_ANON_KEY with your actual key
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52cGhrcGh4Y2VzZWZkdGpuZ21kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzEzMjQsImV4cCI6MjA2ODgwNzMyNH0.TW_mL_p6KmE97fTJ-QBXIZaD1iarH_39ScYpE3gMtuo`, // Replace YOUR_SUPABASE_ANON_KEY with your actual key
+, // Replace YOUR_SUPABASE_ANON_KEY with your actual key
       },
       body: JSON.stringify({ base64Image }),
     });
