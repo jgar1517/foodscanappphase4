@@ -84,16 +84,17 @@ serve(async (req) => {
     }
 
     // Call Google Vision API
-    const googleResponse = await fetch(
-      `${GOOGLE_VISION_API_URL}?key=${AIzaSyBqW1hJTZSSWH3xchRQ3rrmqkVbSHts3pw}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      }
-    )
+   const googleResponse = await fetch(
+  `${GOOGLE_VISION_API_URL}?key=${GOOGLE_VISION_API_KEY}`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  }
+)
+
 
     if (!googleResponse.ok) {
       const errorData = await googleResponse.json()
