@@ -73,21 +73,26 @@ class OCRService {
    * Extracts text from an image using the Supabase Edge Function.
    */
   async extractTextFromImage(imageUri: string): Promise<OCRResult> {
-    const startTime = Date.now();
-    try {
-      // Read the image file and convert to base64
-      const base64Image = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+  const startTime = Date.now();
+  try {
+    // Read the image file and convert to base64
+    const base64Image = await FileSystem.readAsStringAsync(imageUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
 
-      // Make a POST request to your Supabase Edge Function
-      const response = await fetch(this.OCR_FUNCTION_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ base64Image }),
-      });
+    // Make a POST request to your Supabase Edge Function
+    const response = await fetch(this.OCR_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // ADD THIS LINE:
+        'Authorization': `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52cGhrcGh4Y2VzZWZkdGpuZ21kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzEzMjQsImV4cCI6MjA2ODgwNzMyNH0.TW_mL_p6KmE97fTJ-QBXIZaD1iarH_39ScYpE3gMtuo`, // Replace YOUR_SUPABASE_ANON_KEY with your actual key
+      },
+      body: JSON.stringify({ base64Image }),
+    });
+// ...
+
+
 
       if (!response.ok) {
         const errorData = await response.json();
