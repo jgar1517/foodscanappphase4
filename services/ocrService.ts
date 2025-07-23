@@ -29,7 +29,8 @@ class OCRService {
   private static instance: OCRService;
   // Replace with your actual Supabase Edge Function URL
   // This should be the URL of your deployed 'ocr-process' function
-  private readonly ocr-process = 'https://nvphkphxcesefdtjngmd.supabase.co/functions/v1/ocr-process';
+  private readonly OCR_FUNCTION_URL = 'https://nvphkphxcesefdtjngmd.supabase.co/functions/v1/ocr-process';
+
 
   public static getInstance(): OCRService {
     if (!OCRService.instance) {
