@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 24,
     textAlign: 'center',
   },
