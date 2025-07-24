@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { User, Settings, Heart, Shield, Download, Upload, Trash2 } from 'lucide-react-native';
 import DietaryProfileService, { DietaryPreference } from '@/services/dietaryProfileService';
 import ScanService from '@/services/scanService';
@@ -136,64 +137,82 @@ export default function ProfileScreen() {
           </View>
 
           {/* Scan Statistics */}
-          <View style={styles.section}>
+          <BlurView intensity={20} tint="light" style={[styles.glassContainer, styles.sectionGlass]}>
+            <View style={styles.glassContent}>
             <Text style={styles.sectionTitle}>Scan Statistics</Text>
             <View style={styles.statsContainer}>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>{scanStats.totalScans}</Text>
-                <Text style={styles.statLabel}>Total Scans</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>{scanStats.averageSafetyScore}</Text>
-                <Text style={styles.statLabel}>Avg Safety Score</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>{scanStats.completedScans}</Text>
-                <Text style={styles.statLabel}>Completed</Text>
-              </View>
+              <BlurView intensity={15} tint="light" style={[styles.glassContainer, styles.statCardGlass]}>
+                <View style={[styles.glassContent, styles.statCardContent]}>
+                  <Text style={styles.statNumber}>{scanStats.totalScans}</Text>
+                  <Text style={styles.statLabel}>Total Scans</Text>
+                </View>
+              </BlurView>
+              <BlurView intensity={15} tint="light" style={[styles.glassContainer, styles.statCardGlass]}>
+                <View style={[styles.glassContent, styles.statCardContent]}>
+                  <Text style={styles.statNumber}>{scanStats.averageSafetyScore}</Text>
+                  <Text style={styles.statLabel}>Avg Safety Score</Text>
+                </View>
+              </BlurView>
+              <BlurView intensity={15} tint="light" style={[styles.glassContainer, styles.statCardGlass]}>
+                <View style={[styles.glassContent, styles.statCardContent]}>
+                  <Text style={styles.statNumber}>{scanStats.completedScans}</Text>
+                  <Text style={styles.statLabel}>Completed</Text>
+                </View>
+              </BlurView>
             </View>
-          </View>
+            </View>
+          </BlurView>
 
           {/* Dietary Preferences */}
-          <View style={styles.section}>
+          <BlurView intensity={20} tint="light" style={[styles.glassContainer, styles.sectionGlass]}>
+            <View style={styles.glassContent}>
             <Text style={styles.sectionTitle}>Dietary Preferences</Text>
             <View style={styles.preferencesContainer}>
               {dietaryPreferences.map((preference) => (
-                <View key={preference.id} style={styles.preferenceCard}>
-                  <View style={styles.preferenceInfo}>
-                    <Text style={styles.preferenceName}>{preference.label}</Text>
-                    <Text style={styles.preferenceDescription}>
-                      {preference.description}
-                    </Text>
+                <BlurView key={preference.id} intensity={15} tint="light" style={[styles.glassContainer, styles.preferenceCardGlass]}>
+                  <View style={[styles.glassContent, styles.preferenceCardContent]}>
+                    <View style={styles.preferenceInfo}>
+                      <Text style={styles.preferenceName}>{preference.label}</Text>
+                      <Text style={styles.preferenceDescription}>
+                        {preference.description}
+                      </Text>
+                    </View>
+                    <Switch
+                      value={preference.isActive}
+                      onValueChange={() => togglePreference(preference.id)}
+                      trackColor={{ false: '#374151', true: '#10b981' }}
+                      thumbColor={preference.isActive ? '#ffffff' : '#9ca3af'}
+                    />
                   </View>
-                  <Switch
-                    value={preference.isActive}
-                    onValueChange={() => togglePreference(preference.id)}
-                    trackColor={{ false: '#374151', true: '#10b981' }}
-                    thumbColor={preference.isActive ? '#ffffff' : '#9ca3af'}
-                  />
-                </View>
+                </BlurView>
               ))}
             </View>
-          </View>
+            </View>
+          </BlurView>
 
           {/* Profile Actions */}
-          <View style={styles.section}>
+          <BlurView intensity={20} tint="light" style={[styles.glassContainer, styles.sectionGlass]}>
+            <View style={styles.glassContent}>
             <Text style={styles.sectionTitle}>Profile Actions</Text>
             <View style={styles.actionsContainer}>
-              <TouchableOpacity style={styles.actionButton} onPress={exportProfile}>
-                <Download size={20} color="#10b981" />
-                <Text style={styles.actionButtonText}>Export Profile</Text>
-              </TouchableOpacity>
+              <BlurView intensity={15} tint="light" style={[styles.glassContainer, styles.actionButtonGlass]}>
+                <TouchableOpacity style={[styles.glassContent, styles.actionButtonContent]} onPress={exportProfile}>
+                  <Download size={20} color="#10b981" />
+                  <Text style={styles.actionButtonText}>Export Profile</Text>
+                </TouchableOpacity>
+              </BlurView>
               
-              <TouchableOpacity style={styles.actionButton} onPress={clearScanHistory}>
-                <Trash2 size={20} color="#ef4444" />
-                <Text style={[styles.actionButtonText, { color: '#ef4444' }]}>
-                  Clear Scan History
-                </Text>
-              </TouchableOpacity>
+              <BlurView intensity={15} tint="light" style={[styles.glassContainer, styles.actionButtonGlass]}>
+                <TouchableOpacity style={[styles.glassContent, styles.actionButtonContent]} onPress={clearScanHistory}>
+                  <Trash2 size={20} color="#ef4444" />
+                  <Text style={[styles.actionButtonText, { color: '#ef4444' }]}>
+                    Clear Scan History
+                  </Text>
+                </TouchableOpacity>
+              </BlurView>
             </View>
-          </View>
+            </View>
+          </BlurView>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
@@ -254,8 +273,11 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
   },
   section: {
-    paddingHorizontal: 24,
     paddingVertical: 20,
+  },
+  sectionGlass: {
+    marginHorizontal: 24,
+    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -269,12 +291,16 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'transparent',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  statCardGlass: {
+    flex: 1,
+    marginHorizontal: 6,
+  },
+  statCardContent: {
+    alignItems: 'center',
+    padding: 16,
   },
   statNumber: {
     fontSize: 24,
@@ -291,14 +317,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   preferenceCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'transparent',
+  },
+  preferenceCardGlass: {
+    marginBottom: 12,
+  },
+  preferenceCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 16,
   },
   preferenceInfo: {
     flex: 1,
@@ -319,18 +347,29 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   actionButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'transparent',
+  },
+  actionButtonGlass: {
+    marginBottom: 12,
+  },
+  actionButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 16,
   },
   actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#10b981',
+  },
+  glassContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  glassContent: {
+    padding: 24,
   },
 });

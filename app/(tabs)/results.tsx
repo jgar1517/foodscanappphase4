@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, Circle as XCircle, ExternalLink, Lightbulb, Clock, Star, ShoppingCart, ChevronRight, Share } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -143,60 +144,62 @@ export default function ResultsScreen() {
     const isPersonalized = ingredient.isPersonalized;
     
     return (
-      <View key={`${ingredient.name}-${ingredient.position}`} style={styles.ingredientCard}>
-        <View style={styles.ingredientHeader}>
-          <View style={styles.ingredientInfo}>
-            <View style={styles.ingredientNameRow}>
-              <Text style={styles.ingredientName}>{ingredient.name}</Text>
-              {isPersonalized && (
-                <View style={styles.personalizedBadge}>
-                  <Text style={styles.personalizedBadgeText}>✨</Text>
-                </View>
-              )}
-            </View>
-            <View style={styles.ingredientMeta}>
-              <Text style={styles.ingredientPosition}>Position #{ingredient.position}</Text>
-              <Text style={styles.ingredientConfidence}>
-                {ingredient.confidence}% confidence
-              </Text>
-              {isPersonalized && ingredient.originalRating !== ingredient.rating && (
-                <Text style={styles.originalRating}>
-                  Originally: {ingredient.originalRating}
-                </Text>
-              )}
-            </View>
-          </View>
-          <View style={[styles.ratingBadge, { backgroundColor: `${color}15` }]}>
-            <IconComponent size={16} color={color} />
-            <Text style={[styles.ratingText, { color }]}>
-              {ingredient.rating.charAt(0).toUpperCase() + ingredient.rating.slice(1)}
-            </Text>
-          </View>
-        </View>
-        
-        <Text style={styles.ingredientExplanation}>{ingredient.explanation}</Text>
-        
-        {/* Show personalization reasons if applicable */}
-        {isPersonalized && ingredient.personalizationReasons && ingredient.personalizationReasons.length > 0 && (
-          <View style={styles.personalizationReasons}>
-            <Text style={styles.personalizationReasonsTitle}>Personalized because:</Text>
-            {ingredient.personalizationReasons.map((reason: string, index: number) => (
-              <Text key={`${ingredient.name}-reason-${index}`} style={styles.personalizationReason}>• {reason}</Text>
-            ))}
-          </View>
-        )}
-        
-        <View style={styles.sourcesContainer}>
-          <Text style={styles.sourcesLabel}>Sources:</Text>
-          <View style={styles.sourcesRow}>
-            {ingredient.sources.map((source: string, index: number) => (
-              <View key={`${ingredient.name}-source-${index}`} style={styles.sourceTag}>
-                <Text style={styles.sourceText}>{source}</Text>
+      <BlurView key={`${ingredient.name}-${ingredient.position}`} intensity={15} tint="light" style={[styles.glassContainer, styles.ingredientGlass]}>
+        <View style={styles.glassContent}>
+          <View style={styles.ingredientHeader}>
+            <View style={styles.ingredientInfo}>
+              <View style={styles.ingredientNameRow}>
+                <Text style={styles.ingredientName}>{ingredient.name}</Text>
+                {isPersonalized && (
+                  <View style={styles.personalizedBadge}>
+                    <Text style={styles.personalizedBadgeText}>✨</Text>
+                  </View>
+                )}
               </View>
-            ))}
+              <View style={styles.ingredientMeta}>
+                <Text style={styles.ingredientPosition}>Position #{ingredient.position}</Text>
+                <Text style={styles.ingredientConfidence}>
+                  {ingredient.confidence}% confidence
+                </Text>
+                {isPersonalized && ingredient.originalRating !== ingredient.rating && (
+                  <Text style={styles.originalRating}>
+                    Originally: {ingredient.originalRating}
+                  </Text>
+                )}
+              </View>
+            </View>
+            <View style={[styles.ratingBadge, { backgroundColor: `${color}15` }]}>
+              <IconComponent size={16} color={color} />
+              <Text style={[styles.ratingText, { color }]}>
+                {ingredient.rating.charAt(0).toUpperCase() + ingredient.rating.slice(1)}
+              </Text>
+            </View>
+          </View>
+          
+          <Text style={styles.ingredientExplanation}>{ingredient.explanation}</Text>
+          
+          {/* Show personalization reasons if applicable */}
+          {isPersonalized && ingredient.personalizationReasons && ingredient.personalizationReasons.length > 0 && (
+            <View style={styles.personalizationReasons}>
+              <Text style={styles.personalizationReasonsTitle}>Personalized because:</Text>
+              {ingredient.personalizationReasons.map((reason: string, index: number) => (
+                <Text key={`${ingredient.name}-reason-${index}`} style={styles.personalizationReason}>• {reason}</Text>
+              ))}
+            </View>
+          )}
+          
+          <View style={styles.sourcesContainer}>
+            <Text style={styles.sourcesLabel}>Sources:</Text>
+            <View style={styles.sourcesRow}>
+              {ingredient.sources.map((source: string, index: number) => (
+                <View key={`${ingredient.name}-source-${index}`} style={styles.sourceTag}>
+                  <Text style={styles.sourceText}>{source}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         </View>
-      </View>
+      </BlurView>
     );
   };
 
@@ -294,44 +297,46 @@ export default function ResultsScreen() {
         </View>
 
         {/* Safety Overview */}
-        <View style={styles.overviewSection}>
-          <SafetyScoreCircle score={analysisResult.overallSafetyScore} />
-          
-          {/* Show personalization indicator if applicable */}
-          {analysisResult.ingredients.some((ing: any) => ing.isPersonalized) && (
-            <View style={styles.personalizationBanner}>
-              <Text style={styles.personalizationText}>
-                ✨ Results personalized for your dietary preferences
-              </Text>
-            </View>
-          )}
-          
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}>
-              <View style={[styles.summaryIcon, { backgroundColor: '#10b98115' }]}>
-                <CheckCircle size={16} color="#10b981" />
-              </View>
-              <Text style={styles.summaryCount}>{safetySummary.safe || 0}</Text>
-              <Text style={styles.summaryLabel}>Safe</Text>
-            </View>
+        <BlurView intensity={20} tint="light" style={[styles.glassContainer, styles.overviewGlass]}>
+          <View style={styles.glassContent}>
+            <SafetyScoreCircle score={analysisResult.overallSafetyScore} />
             
-            <View style={styles.summaryItem}>
-              <View style={[styles.summaryIcon, { backgroundColor: '#f59e0b15' }]}>
-                <AlertTriangle size={16} color="#f59e0b" />
+            {/* Show personalization indicator if applicable */}
+            {analysisResult.ingredients.some((ing: any) => ing.isPersonalized) && (
+              <View style={styles.personalizationBanner}>
+                <Text style={styles.personalizationText}>
+                  ✨ Results personalized for your dietary preferences
+                </Text>
               </View>
-              <Text style={styles.summaryCount}>{safetySummary.caution || 0}</Text>
-              <Text style={styles.summaryLabel}>Caution</Text>
-            </View>
+            )}
             
-            <View style={styles.summaryItem}>
-              <View style={[styles.summaryIcon, { backgroundColor: '#ef444415' }]}>
-                <XCircle size={16} color="#ef4444" />
+            <View style={styles.summaryRow}>
+              <View style={styles.summaryItem}>
+                <View style={[styles.summaryIcon, { backgroundColor: '#10b98115' }]}>
+                  <CheckCircle size={16} color="#10b981" />
+                </View>
+                <Text style={styles.summaryCount}>{safetySummary.safe || 0}</Text>
+                <Text style={styles.summaryLabel}>Safe</Text>
               </View>
-              <Text style={styles.summaryCount}>{safetySummary.avoid || 0}</Text>
-              <Text style={styles.summaryLabel}>Avoid</Text>
+              
+              <View style={styles.summaryItem}>
+                <View style={[styles.summaryIcon, { backgroundColor: '#f59e0b15' }]}>
+                  <AlertTriangle size={16} color="#f59e0b" />
+                </View>
+                <Text style={styles.summaryCount}>{safetySummary.caution || 0}</Text>
+                <Text style={styles.summaryLabel}>Caution</Text>
+              </View>
+              
+              <View style={styles.summaryItem}>
+                <View style={[styles.summaryIcon, { backgroundColor: '#ef444415' }]}>
+                  <XCircle size={16} color="#ef4444" />
+                </View>
+                <Text style={styles.summaryCount}>{safetySummary.avoid || 0}</Text>
+                <Text style={styles.summaryLabel}>Avoid</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </BlurView>
 
         {/* Tabs */}
         <View style={styles.tabContainer}>
@@ -373,24 +378,28 @@ export default function ResultsScreen() {
         {activeTab === 'alternatives' && (
           <View style={styles.tabContent}>
             <Text style={styles.sectionTitle}>Healthier Alternatives</Text>
-            <View style={styles.comingSoonContainer}>
-              <Text style={styles.comingSoonText}>Product recommendations coming soon!</Text>
-              <Text style={styles.comingSoonSubtext}>
-                We're working on integrating with retailers to bring you the best alternative products.
-              </Text>
-            </View>
+            <BlurView intensity={15} tint="light" style={[styles.glassContainer, styles.comingSoonGlass]}>
+              <View style={styles.glassContent}>
+                <Text style={styles.comingSoonText}>Product recommendations coming soon!</Text>
+                <Text style={styles.comingSoonSubtext}>
+                  We're working on integrating with retailers to bring you the best alternative products.
+                </Text>
+              </View>
+            </BlurView>
           </View>
         )}
         
         {activeTab === 'recipes' && (
           <View style={styles.tabContent}>
             <Text style={styles.sectionTitle}>Homemade Alternatives</Text>
-            <View style={styles.comingSoonContainer}>
-              <Text style={styles.comingSoonText}>Recipe suggestions coming soon!</Text>
-              <Text style={styles.comingSoonSubtext}>
-                We're developing a recipe engine to suggest healthier homemade alternatives.
-              </Text>
-            </View>
+            <BlurView intensity={15} tint="light" style={[styles.glassContainer, styles.comingSoonGlass]}>
+              <View style={styles.glassContent}>
+                <Text style={styles.comingSoonText}>Recipe suggestions coming soon!</Text>
+                <Text style={styles.comingSoonSubtext}>
+                  We're developing a recipe engine to suggest healthier homemade alternatives.
+                </Text>
+              </View>
+            </BlurView>
           </View>
         )}
       </ScrollView>
@@ -469,8 +478,10 @@ const styles = StyleSheet.create({
   },
   overviewSection: {
     alignItems: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: 24,
+  },
+  overviewGlass: {
+    margin: 24,
+    marginTop: 0,
   },
   scoreCircle: {
     width: 120,
@@ -556,12 +567,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   ingredientCard: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'transparent',
+  },
+  ingredientGlass: {
+    marginHorizontal: 24,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   ingredientHeader: {
     flexDirection: 'row',
@@ -840,12 +850,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   comingSoonContainer: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 24,
+    backgroundColor: 'transparent',
     alignItems: 'center',
+  },
+  comingSoonGlass: {
+    marginHorizontal: 24,
+  },
+  glassContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  glassContent: {
+    padding: 24,
   },
   comingSoonText: {
     fontSize: 18,
