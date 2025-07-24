@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Camera, House, Search, User } from 'lucide-react-native';
 
 export default function TabLayout() {
@@ -9,19 +9,16 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: 'transparent',
-          borderTopWidth: 1,
-          borderTopColor: 'rgba(255, 255, 255, 0.2)',
           height: 80,
           paddingBottom: 20,
           paddingTop: 10,
           position: 'absolute',
         },
         tabBarBackground: () => (
-          <LinearGradient
-            colors={['rgba(147, 51, 234, 0.9)', 'rgba(79, 70, 229, 0.9)']}
+          <BlurView
+            intensity={80}
+            tint="light"
             style={{ flex: 1 }}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
           />
         ),
         tabBarActiveTintColor: '#ffffff',
