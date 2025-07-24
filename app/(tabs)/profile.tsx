@@ -305,12 +305,12 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#10b981',
+    color: '#ffffff',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
   preferencesContainer: {
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   },
   preferenceDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 18,
   },
   actionsContainer: {
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10b981',
+    color: '#ffffff',
   },
   glassContainer: {
     borderRadius: 16,

@@ -295,12 +295,12 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 4,
   },
   stepDescription: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 20,
   },
   trustIndicators: {
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
   },
   trustText: {
     fontSize: 16,
-    color: '#374151',
+    color: '#ffffff',
     fontWeight: '500',
   },
   finalCTA: {
@@ -326,13 +326,13 @@ const styles = StyleSheet.create({
   finalCTATitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 8,
     textAlign: 'center',
   },
   finalCTASubtitle: {
     fontSize: 16,
-    color: '#e5e7eb',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     marginBottom: 24,
   },

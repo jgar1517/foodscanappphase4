@@ -520,11 +520,11 @@ const styles = StyleSheet.create({
   summaryCount: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '600',
   },
   tabContainer: {
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
   ingredientName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 4,
     flex: 1,
   },
@@ -612,15 +612,15 @@ const styles = StyleSheet.create({
   },
   ingredientPosition: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   ingredientConfidence: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   originalRating: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: 'rgba(255, 255, 255, 0.5)',
     fontStyle: 'italic',
     textTransform: 'capitalize',
   },
@@ -638,7 +638,7 @@ const styles = StyleSheet.create({
   },
   ingredientExplanation: {
     fontSize: 14,
-    color: '#374151',
+    color: 'rgba(255, 255, 255, 0.9)',
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
   },
   sourcesLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '600',
   },
   sourcesRow: {
@@ -683,7 +683,7 @@ const styles = StyleSheet.create({
   },
   sourceText: {
     fontSize: 10,
-    color: '#374151',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '600',
   },
   recommendationCard: {
@@ -868,13 +868,13 @@ const styles = StyleSheet.create({
   comingSoonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 8,
     textAlign: 'center',
   },
   comingSoonSubtext: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 20,
   },
