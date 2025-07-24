@@ -124,12 +124,14 @@ class OCRService {
     const rawText = ocrResult.text;
     let ingredients: string[] = [];
 
-    // Enhanced heuristic: look for common ingredient list indicators
+    // More comprehensive ingredient list indicators
     const ingredientKeywords = [
       'ingredients:', 'ingredientes:', 'contains:', 'composition:', 
-      'made with:', 'made from:', 'ingrédients:', 'contiene:'
+      'made with:', 'made from:', 'ingrédients:', 'contiene:',
+      'ingredient list:', 'contains the following:', 'made from:'
     ];
     let startIndex = -1;
+    let endIndex = -1;
 
     for (const keyword of ingredientKeywords) {
       const index = rawText.toLowerCase().indexOf(keyword);
@@ -142,18 +144,26 @@ class OCRService {
     if (startIndex !== -1) {
       let ingredientListText = rawText.substring(startIndex).trim();
 
-      // Remove common trailing text that is not part of ingredients
+      // More comprehensive stop keywords to end ingredient parsing
       const stopKeywords = [
         'nutrition facts', 'nutritional information', 'allergens', 'allergy information', 
         'directions', 'serving suggestion', 'distributed by', 'manufactured by',
         'best by', 'use by', 'expiration', 'exp', 'lot', 'upc', 'net wt',
         'calories', 'protein', 'carbohydrates', 'fat', 'sodium', 'sugar',
-        'vitamin', 'mineral', 'daily value', '%dv', 'serving size'
+        'vitamin', 'mineral', 'daily value', '%dv', 'serving size',
+        'packed for', 'packed by', 'processed for', 'processed by',
+        'distributed for', 'made for', 'produced for', 'produced by',
+        'address:', 'phone:', 'website:', 'www.', '.com', '.org',
+        'city', 'state', 'zip', 'country', 'usa', 'america',
+        'llc', 'inc', 'corp', 'ltd', 'company', 'co.',
+        'restaurant', 'store', 'market', 'shop', 'brand'
       ];
+      
       for (const keyword of stopKeywords) {
         const index = ingredientListText.toLowerCase().indexOf(keyword);
         if (index !== -1) {
           ingredientListText = ingredientListText.substring(0, index).trim();
+          endIndex = index;
           break;
         }
       }
@@ -200,7 +210,7 @@ class OCRService {
     // Filter out pure numbers
     if (/^\d+$/.test(text)) return false;
     
-    // Filter out common non-ingredient words
+    // Comprehensive filter for non-ingredient words
     const nonIngredientWords = [
       'nutrition', 'facts', 'information', 'label', 'product', 'brand',
       'company', 'inc', 'llc', 'corp', 'ltd', 'usa', 'america',
@@ -210,11 +220,64 @@ class OCRService {
       'size', 'weight', 'net', 'gross', 'total', 'per', 'daily',
       'value', 'percent', 'vitamin', 'mineral', 'supplement',
       'warning', 'caution', 'allergen', 'gluten', 'dairy', 'soy',
-      'keep', 'store', 'refrigerate', 'freeze', 'room', 'temperature'
+      'keep', 'store', 'refrigerate', 'freeze', 'room', 'temperature',
+      // Restaurant and location terms
+      'restaurant', 'cafe', 'diner', 'grill', 'kitchen', 'food',
+      'packed', 'prepared', 'made', 'for', 'by', 'at',
+      // US states and common cities
+      'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado',
+      'connecticut', 'delaware', 'florida', 'georgia', 'hawaii', 'idaho',
+      'illinois', 'indiana', 'iowa', 'kansas', 'kentucky', 'louisiana',
+      'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota',
+      'mississippi', 'missouri', 'montana', 'nebraska', 'nevada',
+      'hampshire', 'jersey', 'mexico', 'york', 'carolina', 'dakota',
+      'ohio', 'oklahoma', 'oregon', 'pennsylvania', 'island', 'tennessee',
+      'texas', 'utah', 'vermont', 'virginia', 'washington', 'wisconsin',
+      'wyoming', 'atlanta', 'chicago', 'houston', 'phoenix', 'philadelphia',
+      'antonio', 'diego', 'dallas', 'jose', 'austin', 'jacksonville',
+      'francisco', 'columbus', 'worth', 'charlotte', 'seattle', 'denver',
+      'vegas', 'detroit', 'memphis', 'boston', 'nashville', 'baltimore',
+      'portland', 'milwaukee', 'albuquerque', 'tucson', 'fresno', 'sacramento',
+      'mesa', 'kansas', 'miami', 'raleigh', 'omaha', 'cleveland', 'tulsa',
+      // Common restaurant chains
+      'mcdonalds', 'burger', 'king', 'subway', 'starbucks', 'pizza', 'hut',
+      'dominos', 'kfc', 'taco', 'bell', 'wendys', 'arbys', 'sonic',
+      'dairy', 'queen', 'jack', 'box', 'carl', 'hardees', 'popeyes',
+      'chick', 'fil', 'chipotle', 'panda', 'express', 'five', 'guys',
+      'shake', 'shack', 'in', 'out', 'whataburger', 'culvers', 'zaxbys'
     ];
     
     const lowerText = text.toLowerCase();
-    if (nonIngredientWords.some(word => lowerText === word || lowerText.includes(word))) {
+    
+    // Check for exact matches or if the text is primarily a non-ingredient word
+    if (nonIngredientWords.some(word => {
+      return lowerText === word || 
+             (lowerText.includes(word) && word.length > 3) ||
+             (word.includes(lowerText) && lowerText.length > 3);
+    })) {
+      return false;
+    }
+    
+    // Filter out US state abbreviations
+    const stateAbbreviations = [
+      'al', 'ak', 'az', 'ar', 'ca', 'co', 'ct', 'de', 'fl', 'ga',
+      'hi', 'id', 'il', 'in', 'ia', 'ks', 'ky', 'la', 'me', 'md',
+      'ma', 'mi', 'mn', 'ms', 'mo', 'mt', 'ne', 'nv', 'nh', 'nj',
+      'nm', 'ny', 'nc', 'nd', 'oh', 'ok', 'or', 'pa', 'ri', 'sc',
+      'sd', 'tn', 'tx', 'ut', 'vt', 'va', 'wa', 'wv', 'wi', 'wy'
+    ];
+    
+    if (stateAbbreviations.includes(lowerText)) {
+      return false;
+    }
+    
+    // Filter out zip codes (5 digits or 5+4 format)
+    if (/^\d{5}(-\d{4})?$/.test(text.trim())) {
+      return false;
+    }
+    
+    // Filter out phone numbers
+    if (/\d{3}[-.]?\d{3}[-.]?\d{4}/.test(text)) {
       return false;
     }
     
@@ -223,6 +286,12 @@ class OCRService {
     
     // Filter out URLs, emails, phone numbers
     if (/(www\.|http|@|\.com|\.org|\d{3}-\d{3}-\d{4})/.test(lowerText)) return false;
+    
+    // Filter out text that's mostly numbers or special characters
+    if (text.replace(/[a-zA-Z]/g, '').length > text.length * 0.5) return false;
+    
+    // Filter out single letters or very short abbreviations that aren't ingredients
+    if (text.length <= 2 && !/^(mg|oz|lb|ml)$/i.test(text)) return false;
     
     // Must contain at least one letter
     if (!/[a-zA-Z]/.test(text)) return false;
