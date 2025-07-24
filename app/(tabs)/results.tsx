@@ -129,7 +129,7 @@ export default function ResultsScreen() {
     const isPersonalized = ingredient.isPersonalized;
     
     return (
-      <View key={ingredient.name} style={styles.ingredientCard}>
+      <View key={`${ingredient.name}-${ingredient.position}`} style={styles.ingredientCard}>
         <View style={styles.ingredientHeader}>
           <View style={styles.ingredientInfo}>
             <View style={styles.ingredientNameRow}>
@@ -167,7 +167,7 @@ export default function ResultsScreen() {
           <View style={styles.personalizationReasons}>
             <Text style={styles.personalizationReasonsTitle}>Personalized because:</Text>
             {ingredient.personalizationReasons.map((reason: string, index: number) => (
-              <Text key={index} style={styles.personalizationReason}>• {reason}</Text>
+              <Text key={`${ingredient.name}-reason-${index}`} style={styles.personalizationReason}>• {reason}</Text>
             ))}
           </View>
         )}
@@ -176,7 +176,7 @@ export default function ResultsScreen() {
           <Text style={styles.sourcesLabel}>Sources:</Text>
           <View style={styles.sourcesRow}>
             {ingredient.sources.map((source: string, index: number) => (
-              <View key={index} style={styles.sourceTag}>
+              <View key={`${ingredient.name}-source-${index}`} style={styles.sourceTag}>
                 <Text style={styles.sourceText}>{source}</Text>
               </View>
             ))}
