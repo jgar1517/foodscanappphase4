@@ -206,6 +206,9 @@ const styles = StyleSheet.create({
   },
   heroTitleAccent: {
     color: '#10b981',
+    textShadowColor: '#a855f7',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   heroSubtitle: {
     fontSize: 16,
