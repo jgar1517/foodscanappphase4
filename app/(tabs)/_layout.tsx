@@ -1,8 +1,31 @@
 import { Tabs } from 'expo-router';
 import { BlurView } from 'expo-blur';
+import { View } from 'react-native';
 import { Camera, House, Search, User } from 'lucide-react-native';
 
 export default function TabLayout() {
+  const TabIcon = ({ IconComponent, size, color, focused }: {
+    IconComponent: any;
+    size: number;
+    color: string;
+    focused: boolean;
+  }) => (
+    <View
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: focused ? 'rgba(255, 255, 255, 0.3)' : 'transparent',
+        borderWidth: focused ? 1 : 0,
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <IconComponent size={size} color={color} />
+    </View>
+  );
+
   return (
     <Tabs
       screenOptions={{
@@ -32,28 +55,36 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ size, color }) => <House size={size} color={color} />,
+          tabBarIcon: ({ size, color, focused }) => (
+            <TabIcon IconComponent={House} size={size} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="scan"
         options={{
           title: 'Scan',
-          tabBarIcon: ({ size, color }) => <Camera size={size} color={color} />,
+          tabBarIcon: ({ size, color, focused }) => (
+            <TabIcon IconComponent={Camera} size={size} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="results"
         options={{
           title: 'Results',
-          tabBarIcon: ({ size, color }) => <Search size={size} color={color} />,
+          tabBarIcon: ({ size, color, focused }) => (
+            <TabIcon IconComponent={Search} size={size} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ size, color }) => <User size={size} color={color} />,
+          tabBarIcon: ({ size, color, focused }) => (
+            <TabIcon IconComponent={User} size={size} color={color} focused={focused} />
+          ),
         }}
       />
     </Tabs>
