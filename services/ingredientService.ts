@@ -166,6 +166,116 @@ class IngredientService {
         sources: ['FDA', 'Nutrition experts'],
         healthConcerns: ['Blood sugar spikes', 'Lower fiber content', 'Reduced nutrients'],
         alternatives: ['Whole wheat flour', 'Almond flour', 'Oat flour']
+      },
+      {
+        id: '11',
+        name: 'Salt',
+        category: 'seasoning',
+        safetyRating: 'safe',
+        confidence: 95,
+        explanation: 'Essential mineral for bodily functions. Safe in normal amounts, but excessive consumption may contribute to high blood pressure.',
+        sources: ['FDA', 'WHO'],
+        healthConcerns: ['High blood pressure (excessive amounts)'],
+        alternatives: ['Sea salt', 'Himalayan salt', 'Herb seasonings']
+      },
+      {
+        id: '12',
+        name: 'Paprika',
+        category: 'spice',
+        safetyRating: 'safe',
+        confidence: 100,
+        explanation: 'Natural spice made from ground peppers. Rich in antioxidants and vitamin A. Generally safe for consumption.',
+        sources: ['FDA', 'Nutritional studies'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '13',
+        name: 'Turmeric',
+        category: 'spice',
+        safetyRating: 'safe',
+        confidence: 100,
+        explanation: 'Natural spice with anti-inflammatory properties. Contains curcumin, which has numerous health benefits.',
+        sources: ['FDA', 'Scientific studies'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '14',
+        name: 'Garlic',
+        category: 'spice',
+        safetyRating: 'safe',
+        confidence: 100,
+        explanation: 'Natural ingredient with antimicrobial and cardiovascular benefits. Safe and beneficial for most people.',
+        sources: ['FDA', 'Nutritional studies'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '15',
+        name: 'Onion',
+        category: 'vegetable',
+        safetyRating: 'safe',
+        confidence: 100,
+        explanation: 'Natural vegetable ingredient rich in antioxidants and beneficial compounds. Safe for consumption.',
+        sources: ['FDA', 'Nutritional studies'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '16',
+        name: 'Black Pepper',
+        category: 'spice',
+        safetyRating: 'safe',
+        confidence: 100,
+        explanation: 'Common spice that enhances nutrient absorption and has antioxidant properties. Safe for consumption.',
+        sources: ['FDA', 'Nutritional studies'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '17',
+        name: 'Olive Oil',
+        category: 'oil',
+        safetyRating: 'safe',
+        confidence: 100,
+        explanation: 'Healthy fat source rich in monounsaturated fats and antioxidants. Beneficial for heart health.',
+        sources: ['FDA', 'Mediterranean diet studies'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '18',
+        name: 'Vinegar',
+        category: 'acid',
+        safetyRating: 'safe',
+        confidence: 95,
+        explanation: 'Natural preservative and flavoring agent. Safe for consumption and may have digestive benefits.',
+        sources: ['FDA', 'Traditional use'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '19',
+        name: 'Lemon Juice',
+        category: 'natural',
+        safetyRating: 'safe',
+        confidence: 100,
+        explanation: 'Natural source of vitamin C and citric acid. Safe and beneficial for health.',
+        sources: ['FDA', 'Nutritional studies'],
+        healthConcerns: [],
+        alternatives: []
+      },
+      {
+        id: '20',
+        name: 'Rosemary Extract',
+        category: 'natural preservative',
+        safetyRating: 'safe',
+        confidence: 95,
+        explanation: 'Natural antioxidant and preservative derived from rosemary herb. Safe alternative to synthetic preservatives.',
+        sources: ['FDA', 'Natural products studies'],
+        healthConcerns: [],
+        alternatives: []
       }
     ];
 
@@ -180,6 +290,23 @@ class IngredientService {
       if (ingredient.name === 'Artificial Color Red 40') {
         this.ingredientDatabase.set('red 40', ingredient);
         this.ingredientDatabase.set('red dye 40', ingredient);
+      }
+      if (ingredient.name === 'Salt') {
+        this.ingredientDatabase.set('sodium chloride', ingredient);
+        this.ingredientDatabase.set('table salt', ingredient);
+        this.ingredientDatabase.set('sea salt', ingredient);
+      }
+      if (ingredient.name === 'Black Pepper') {
+        this.ingredientDatabase.set('pepper', ingredient);
+        this.ingredientDatabase.set('ground black pepper', ingredient);
+      }
+      if (ingredient.name === 'Olive Oil') {
+        this.ingredientDatabase.set('extra virgin olive oil', ingredient);
+        this.ingredientDatabase.set('evoo', ingredient);
+      }
+      if (ingredient.name === 'Lemon Juice') {
+        this.ingredientDatabase.set('lemon', ingredient);
+        this.ingredientDatabase.set('citrus', ingredient);
       }
     });
   }
