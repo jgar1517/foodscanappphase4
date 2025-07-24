@@ -18,7 +18,7 @@ interface GoogleAccessTokenResponse {
 }
 
 async function getGoogleAccessToken(): Promise<string> {
-  const privateKey = Deno.env.get('GOOGLE_PRIVATE_KEY')
+  const privateKey = Deno.env.get('GOOGLE_VISION_API_KEY')
   const clientEmail = Deno.env.get('GOOGLE_CLIENT_EMAIL')
 
   if (!privateKey || !clientEmail) {
