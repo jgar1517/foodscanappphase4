@@ -66,10 +66,27 @@ async function getGoogleAccessToken(): Promise<string> {
   }
 
   try {
-    // Import the private key
+    // Convert PEM to DER format for Web Crypto API
+    const pemHeader = '-----BEGIN PRIVATE KEY-----'
+    const pemFooter = '-----END PRIVATE KEY-----'
+    
+    if (!cleanPrivateKey.includes(pemHeader) || !cleanPrivateKey.includes(pemFooter)) {
+      throw new Error('Invalid PEM format: missing header or footer')
+    }
+    
+    // Extract the base64 content between the PEM markers
+    const pemContents = cleanPrivateKey
+      .replace(pemHeader, '')
+      .replace(pemFooter, '')
+      .replace(/\s/g, '') // Remove all whitespace including newlines
+    
+    // Convert base64 to binary
+    const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0))
+    
+    // Import the private key in DER format
     const cryptoKey = await crypto.subtle.importKey(
       'pkcs8',
-      new TextEncoder().encode(cleanPrivateKey),
+      binaryDer,
       {
         name: 'RSASSA-PKCS1-v1_5',
         hash: 'SHA-256',
