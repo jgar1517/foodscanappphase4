@@ -102,22 +102,36 @@ export default function ResultsScreen() {
   // Show loading state
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={['#201A40', '#302860']}
+        style={styles.container}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading scan results...</Text>
         </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   // Show error state
   if (error || !scanSession || !analysisResult) {
     return (
-      <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={['#201A40', '#302860']}
+        style={styles.container}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error || 'No scan data available'}</Text>
         </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
@@ -255,7 +269,13 @@ export default function ResultsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+      colors={['#201A40', '#302860']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -374,14 +394,17 @@ export default function ResultsScreen() {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+  },
+  safeArea: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,

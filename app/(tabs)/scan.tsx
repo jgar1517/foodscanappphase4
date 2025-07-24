@@ -52,6 +52,7 @@ export default function ScanScreen() {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+    </LinearGradient>
     );
   }
 
@@ -196,11 +197,30 @@ export default function ScanScreen() {
           </View>
         </View>
       </SafeAreaView>
+    </LinearGradient>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+      colors={['#201A40', '#302860']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
+      colors={['#201A40', '#302860']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
+      colors={['#201A40', '#302860']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Scan Ingredient Label</Text>
         <Text style={styles.headerSubtitle}>
@@ -264,14 +284,16 @@ export default function ScanScreen() {
           • Make sure all text is visible in the frame
         </Text>
       </View>
-    </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+  },
+  safeArea: {
+    flex: 1,
   },
   message: {
     fontSize: 16,
