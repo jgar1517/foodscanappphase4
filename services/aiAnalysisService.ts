@@ -27,15 +27,9 @@ export interface AIBatchAnalysis {
 
 class AIAnalysisService {
   private static instance: AIAnalysisService;
-  private config: AIAnalysisConfig;
+  private readonly AI_FUNCTION_URL = 'https://nvphkphxcesefdtjngmd.supabase.co/functions/v1/ai-analyze-ingredients';
 
-  private constructor() {
-    this.config = {
-      model: 'gpt-3.5-turbo',
-      temperature: 0.3, // Lower temperature for more consistent results
-      maxTokens: 2000
-    };
-  }
+  private constructor() {}
 
   public static getInstance(): AIAnalysisService {
     if (!AIAnalysisService.instance) {
@@ -51,58 +45,72 @@ class AIAnalysisService {
     const startTime = Date.now();
 
     try {
-      // For now, simulate AI analysis with enhanced logic
-      // In production, this would call OpenAI API
-      const analyses = await Promise.all(
-        ingredients.map(ingredient => this.analyzeIngredientWithAI(ingredient))
-      );
+      console.log('Calling AI analysis Edge Function...');
+      
+      // Call the Supabase Edge Function for AI analysis
+      const response = await fetch(this.AI_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52cGhrcGh4Y2VzZWZkdGpuZ21kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzEzMjQsImV4cCI6MjA2ODgwNzMyNH0.TW_mL_p6KmE97fTJ-QBXIZaD1iarH_39ScYpE3gMtuo`,
+        },
+        body: JSON.stringify({ ingredients }),
+      });
 
-      const overallAssessment = this.generateOverallAssessment(analyses);
-      const keyFindings = this.extractKeyFindings(analyses);
-      const recommendations = this.generateRecommendations(analyses);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('AI Analysis Edge Function error:', errorData);
+        throw new Error(`AI analysis failed: ${errorData.error || response.statusText}`);
+      }
 
-      return {
-        ingredients: analyses,
-        overallAssessment,
-        keyFindings,
-        recommendations,
-        processingTime: Date.now() - startTime
-      };
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(`AI analysis failed: ${result.error}`);
+      }
+
+      console.log('AI analysis completed successfully');
+      return result.data;
     } catch (error) {
-      console.error('AI analysis failed:', error);
-      throw new Error('AI ingredient analysis failed');
+      console.error('AI analysis failed, falling back to local analysis:', error);
+      
+      // Fallback to local analysis if AI service fails
+      return this.fallbackAnalysis(ingredients);
     }
   }
 
   /**
-   * Analyze single ingredient with AI enhancement
+   * Fallback analysis when AI service is unavailable
    */
-  private async analyzeIngredientWithAI(ingredient: string): Promise<AIIngredientAnalysis> {
-    // Simulate AI processing delay
-    await new Promise(resolve => setTimeout(resolve, 200));
-
-    // Enhanced analysis using pattern matching and knowledge base
-    const analysis = this.getEnhancedIngredientAnalysis(ingredient);
+  private async fallbackAnalysis(ingredients: string[]): Promise<AIBatchAnalysis> {
+    const startTime = Date.now();
     
+    const analyses = await Promise.all(
+      ingredients.map(ingredient => this.analyzeIngredientWithFallback(ingredient))
+    );
+
+    const overallAssessment = this.generateOverallAssessment(analyses);
+    const keyFindings = this.extractKeyFindings(analyses);
+    const recommendations = this.generateRecommendations(analyses);
+
     return {
-      ingredient,
-      category: analysis.category,
-      safetyRating: analysis.safetyRating,
-      confidence: analysis.confidence,
-      reasoning: analysis.reasoning,
-      healthImpacts: analysis.healthImpacts,
-      alternatives: analysis.alternatives,
-      sources: analysis.sources
+      ingredients: analyses,
+      overallAssessment,
+      keyFindings,
+      recommendations,
+      processingTime: Date.now() - startTime
     };
   }
 
   /**
-   * Enhanced ingredient analysis with AI-like reasoning
+   * Fallback ingredient analysis using local knowledge base
    */
-  private getEnhancedIngredientAnalysis(ingredient: string): AIIngredientAnalysis {
+  private async analyzeIngredientWithFallback(ingredient: string): Promise<AIIngredientAnalysis> {
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     const normalizedIngredient = ingredient.toLowerCase();
 
-    // Enhanced knowledge base with AI-like categorization
+    // Local knowledge base for fallback
     const knowledgeBase: { [key: string]: Partial<AIIngredientAnalysis> } = {
       'water': {
         category: 'natural',
