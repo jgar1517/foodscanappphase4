@@ -8,6 +8,7 @@ import {
   Image,
   Dimensions,
   ImageBackground,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +17,37 @@ import { Camera, ChevronRight, CircleCheck as CheckCircle } from 'lucide-react-n
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
+
+const PulsingButton = ({ children, style, onPress, activeOpacity }: any) => {
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, []);
+
+  return (
+    <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+      <TouchableOpacity style={style} onPress={onPress} activeOpacity={activeOpacity}>
+        {children}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 const testimonials = [
   {
@@ -71,15 +103,15 @@ export default function HomeScreen() {
                 AI-powered ingredient safety analysis at your fingertips. Make informed dietary decisions with trusted scientific insights.
               </Text>
               
-              <TouchableOpacity 
+              <PulsingButton
                 style={styles.ctaButton}
                 onPress={handleScanPress}
                 activeOpacity={0.9}
               >
-                <Camera size={20} color="#10b981" />
+                <Camera size={20} color="#ffffff" />
                 <Text style={styles.ctaButtonText}>Start Scanning</Text>
-                <ChevronRight size={20} color="#10b981" />
-              </TouchableOpacity>
+                <ChevronRight size={20} color="#ffffff" />
+              </PulsingButton>
             </View>
           </LinearGradient>
         </View>
@@ -161,13 +193,13 @@ export default function HomeScreen() {
             <Text style={styles.finalCTASubtitle}>
               Join thousands of users making safer food choices every day
             </Text>
-            <TouchableOpacity 
+            <PulsingButton
               style={styles.finalCTAButton}
               onPress={handleScanPress}
               activeOpacity={0.9}
             >
               <Text style={styles.finalCTAButtonText}>Start Your First Scan</Text>
-            </TouchableOpacity>
+            </PulsingButton>
           </View>
         </BlurView>
       </ScrollView>
@@ -225,7 +257,7 @@ const styles = StyleSheet.create({
   ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#7c3aed',
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 32,
@@ -239,7 +271,7 @@ const styles = StyleSheet.create({
   ctaButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10b981',
+    color: '#ffffff',
   },
   section: {
     paddingHorizontal: 24,
@@ -337,7 +369,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   finalCTAButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#7c3aed',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 32,
@@ -350,7 +382,7 @@ const styles = StyleSheet.create({
   finalCTAButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10b981',
+    color: '#ffffff',
   },
   glassContainer: {
     borderRadius: 16,
