@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { create, getNumericDate, Header, Payload } from 'https://deno.land/x/djwt@v3.0.1/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,6 +8,81 @@ const corsHeaders = {
 }
 
 const GOOGLE_VISION_API_URL = 'https://vision.googleapis.com/v1/images:annotate'
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
+const GOOGLE_VISION_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
+
+interface GoogleAccessTokenResponse {
+  access_token: string
+  expires_in: number
+  token_type: string
+}
+
+async function getGoogleAccessToken(): Promise<string> {
+  const privateKey = Deno.env.get('GOOGLE_PRIVATE_KEY')
+  const clientEmail = Deno.env.get('GOOGLE_CLIENT_EMAIL')
+
+  if (!privateKey || !clientEmail) {
+    throw new Error('Google service account credentials not configured')
+  }
+
+  // Clean up the private key (remove extra quotes and fix newlines)
+  const cleanPrivateKey = privateKey
+    .replace(/\\n/g, '\n')
+    .replace(/^"/, '')
+    .replace(/"$/, '')
+
+  // Create JWT header
+  const header: Header = {
+    alg: 'RS256',
+    typ: 'JWT',
+  }
+
+  // Create JWT payload
+  const now = Math.floor(Date.now() / 1000)
+  const payload: Payload = {
+    iss: clientEmail,
+    scope: GOOGLE_VISION_SCOPE,
+    aud: GOOGLE_TOKEN_URL,
+    exp: getNumericDate(60 * 60), // 1 hour from now
+    iat: getNumericDate(0), // now
+  }
+
+  // Import the private key
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    new TextEncoder().encode(cleanPrivateKey),
+    {
+      name: 'RSASSA-PKCS1-v1_5',
+      hash: 'SHA-256',
+    },
+    false,
+    ['sign']
+  )
+
+  // Create and sign the JWT
+  const jwt = await create(header, payload, cryptoKey)
+
+  // Exchange JWT for access token
+  const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion: jwt,
+    }),
+  })
+
+  if (!tokenResponse.ok) {
+    const errorData = await tokenResponse.text()
+    console.error('Token exchange failed:', errorData)
+    throw new Error(`Failed to get access token: ${tokenResponse.status}`)
+  }
+
+  const tokenData: GoogleAccessTokenResponse = await tokenResponse.json()
+  return tokenData.access_token
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -15,23 +91,6 @@ serve(async (req) => {
   }
 
   try {
-    // Get the Google Cloud Vision API key from environment variables
-    const GOOGLE_VISION_API_KEY = Deno.env.get('GOOGLE_VISION_API_KEY')
-
-    if (!GOOGLE_VISION_API_KEY) {
-      console.error('Google Vision API key not configured')
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Google Vision API key not configured' 
-        }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
     if (req.method !== 'POST') {
       return new Response(
         JSON.stringify({ 
@@ -63,6 +122,9 @@ serve(async (req) => {
 
     console.log('Processing OCR request with Google Vision API...')
 
+    // Get access token using service account authentication
+    const accessToken = await getGoogleAccessToken()
+
     // Prepare Google Vision API request
     const requestBody = {
       requests: [
@@ -83,18 +145,15 @@ serve(async (req) => {
       ],
     }
 
-    // Call Google Vision API
-   const googleResponse = await fetch(
-  `${GOOGLE_VISION_API_URL}?key=${GOOGLE_VISION_API_KEY}`,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(requestBody),
-  }
-)
-
+    // Call Google Vision API with Bearer token authentication
+    const googleResponse = await fetch(GOOGLE_VISION_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(requestBody),
+    })
 
     if (!googleResponse.ok) {
       const errorData = await googleResponse.json()
