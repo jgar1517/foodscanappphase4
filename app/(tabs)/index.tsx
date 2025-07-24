@@ -60,7 +60,7 @@ export default function HomeScreen() {
             <View style={styles.heroContent}>
               <Text style={styles.heroTitle}>
                 Scan with{'\n'}
-                <Text style={styles.heroTitleAccent}>Confidence</Text>
+                <Text style={styles.heroTitleAccent}>Foodscan AI</Text>
               </Text>
               <Text style={styles.heroSubtitle}>
                 AI-powered ingredient safety analysis at your fingertips. Make informed dietary decisions with trusted scientific insights.
