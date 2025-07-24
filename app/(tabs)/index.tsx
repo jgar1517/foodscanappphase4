@@ -86,22 +86,18 @@ export default function HomeScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
-        {/* Hero Section */}
+        {/* Hero Section - Background removed */}
         <View style={styles.heroSection}>
-          <LinearGradient
-            colors={['#7c3aed', '#3730a3']}
-            style={styles.heroBackground}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>
-                Scan with{'\n'}
-                <Text style={styles.heroTitleAccent}>Foodscan AI</Text>
-              </Text>
-              <Text style={styles.heroSubtitle}>
-                AI-powered ingredient safety analysis at your fingertips. Make informed dietary decisions with trusted scientific insights.
-              </Text>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroTitle}>
+              Scan with{'\n'}
+              <Text style={styles.heroTitleAccent}>Foodscan AI</Text>
+            </Text>
+            <Text style={styles.heroSubtitle}>
+              AI-powered ingredient safety analysis at your fingertips. Make informed dietary decisions with trusted scientific insights.
+            </Text>
+            
+            {/* Pulsing button remains */}
               
               <PulsingButton
                 style={styles.ctaButton}
@@ -112,8 +108,7 @@ export default function HomeScreen() {
                 <Text style={styles.ctaButtonText}>Start Scanning</Text>
                 <ChevronRight size={20} color="#ffffff" />
               </PulsingButton>
-            </View>
-          </LinearGradient>
+          </View>
         </View>
 
 
@@ -222,6 +217,8 @@ const styles = StyleSheet.create({
   heroSection: {
     height: 400,
     marginBottom: 32,
+    justifyContent: 'center', // Center content vertically
+    alignItems: 'center',     // Center content horizontally
   },
   heroBackground: {
     flex: 1,
