@@ -20,6 +20,11 @@ export default function TabLayout() {
         borderColor: 'rgba(255, 255, 255, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 4,
       }}
     >
       <IconComponent size={size} color={color} />
