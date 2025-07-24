@@ -25,11 +25,29 @@ async function getGoogleAccessToken(): Promise<string> {
     throw new Error('Google service account credentials not configured')
   }
 
-  // Clean up the private key (remove extra quotes and fix newlines)
-  const cleanPrivateKey = privateKey
+  // Clean up the private key more thoroughly
+  let cleanPrivateKey = privateKey
     .replace(/\\n/g, '\n')
     .replace(/^"/, '')
     .replace(/"$/, '')
+    .trim()
+
+  // Ensure the private key has proper BEGIN/END markers
+  if (!cleanPrivateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    if (!cleanPrivateKey.includes('-----BEGIN RSA PRIVATE KEY-----')) {
+      throw new Error('Private key must be in PEM format with proper BEGIN/END markers')
+    }
+    // Convert RSA private key to PKCS#8 format if needed
+    cleanPrivateKey = cleanPrivateKey
+      .replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----')
+      .replace('-----END RSA PRIVATE KEY-----', '-----END PRIVATE KEY-----')
+  }
+
+  console.log('Private key format check:', {
+    hasBeginMarker: cleanPrivateKey.includes('-----BEGIN PRIVATE KEY-----'),
+    hasEndMarker: cleanPrivateKey.includes('-----END PRIVATE KEY-----'),
+    length: cleanPrivateKey.length
+  })
 
   // Create JWT header
   const header: Header = {
@@ -43,45 +61,52 @@ async function getGoogleAccessToken(): Promise<string> {
     iss: clientEmail,
     scope: GOOGLE_VISION_SCOPE,
     aud: GOOGLE_TOKEN_URL,
-    exp: getNumericDate(60 * 60), // 1 hour from now
-    iat: getNumericDate(0), // now
+    exp: now + 3600, // 1 hour from now
+    iat: now, // now
   }
 
-  // Import the private key
-  const cryptoKey = await crypto.subtle.importKey(
-    'pkcs8',
-    new TextEncoder().encode(cleanPrivateKey),
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256',
-    },
-    false,
-    ['sign']
-  )
+  try {
+    // Import the private key
+    const cryptoKey = await crypto.subtle.importKey(
+      'pkcs8',
+      new TextEncoder().encode(cleanPrivateKey),
+      {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: 'SHA-256',
+      },
+      false,
+      ['sign']
+    )
 
-  // Create and sign the JWT
-  const jwt = await create(header, payload, cryptoKey)
+    // Create and sign the JWT
+    const jwt = await create(header, payload, cryptoKey)
 
-  // Exchange JWT for access token
-  const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: jwt,
-    }),
-  })
+    // Exchange JWT for access token
+    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: jwt,
+      }),
+    })
 
-  if (!tokenResponse.ok) {
-    const errorData = await tokenResponse.text()
-    console.error('Token exchange failed:', errorData)
-    throw new Error(`Failed to get access token: ${tokenResponse.status}`)
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text()
+      console.error('Token exchange failed:', errorData)
+      throw new Error(`Failed to get access token: ${tokenResponse.status}`)
+    }
+
+    const tokenData: GoogleAccessTokenResponse = await tokenResponse.json()
+    return tokenData.access_token
+
+  } catch (cryptoError) {
+    console.error('Crypto operation failed:', cryptoError)
+    console.error('Private key preview:', cleanPrivateKey.substring(0, 100) + '...')
+    throw new Error(`Failed to process private key: ${cryptoError.message}`)
   }
-
-  const tokenData: GoogleAccessTokenResponse = await tokenResponse.json()
-  return tokenData.access_token
 }
 
 serve(async (req) => {
