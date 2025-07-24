@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   finalCTAButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#ffffff',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 32,
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   finalCTAButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#10b981',
   },
   glassContainer: {
     borderRadius: 16,
