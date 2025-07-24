@@ -33,6 +33,8 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  const startTime = Date.now();
+
   try {
     if (req.method !== 'POST') {
       return new Response(
@@ -47,10 +49,25 @@ Deno.serve(async (req) => {
       )
     }
 
-    const startTime = Date.now();
+    // Parse request body with error handling
+    let requestData: IngredientAnalysisRequest;
+    try {
+      requestData = await req.json();
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid request body - must be valid JSON' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
 
-    // Parse request body
-    const { ingredients }: IngredientAnalysisRequest = await req.json()
+    const { ingredients } = requestData;
 
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
       return new Response(
@@ -70,7 +87,17 @@ Deno.serve(async (req) => {
     // Get OpenAI API key from environment
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
     if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured')
+      console.error('OpenAI API key not configured')
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'AI service not configured' 
+        }),
+        { 
+          status: 503, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
     }
 
     // Construct the prompt for GPT
@@ -115,11 +142,12 @@ Base your analysis on:
 
 Be conservative with safety ratings - when in doubt, use "caution" rather than "safe".`
 
-    // Call OpenAI API
-    let openaiResponse: Response
-    let openaiData: any
+    // Call OpenAI API with comprehensive error handling
+    let openaiResponse: Response;
     
     try {
+      console.log('Calling OpenAI API...');
+      
       openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -127,29 +155,32 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
           'Authorization': `Bearer ${openaiApiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini', // Using the more cost-effective model
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'system',
-              content: 'You are a food safety expert and nutritionist. Provide accurate, science-based ingredient analysis in the requested JSON format.'
+              content: 'You are a food safety expert and nutritionist. Provide accurate, science-based ingredient analysis in the requested JSON format. Always return valid JSON.'
             },
             {
               role: 'user',
               content: prompt
             }
           ],
-          temperature: 0.3, // Lower temperature for more consistent results
+          temperature: 0.3,
           max_tokens: 3000,
           response_format: { type: 'json_object' }
         }),
-      })
-    } catch (fetchError) {
-      console.error('Failed to call OpenAI API:', fetchError)
+      });
+      
+      console.log(`OpenAI API responded with status: ${openaiResponse.status}`);
+      
+    } catch (networkError) {
+      console.error('Network error calling OpenAI API:', networkError);
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'Failed to connect to AI analysis service',
-          details: fetchError.message 
+          details: `Network error: ${networkError.message}` 
         }),
         { 
           status: 503, 
@@ -158,67 +189,80 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
       )
     }
 
-    // Check if OpenAI API request was successful
+    // Check OpenAI response status before parsing
     if (!openaiResponse.ok) {
-      let errorData: any
+      let errorDetails: any;
+      let errorText: string;
+      
       try {
-        errorData = await openaiResponse.json()
-      } catch (jsonError) {
-        // If we can't parse the error response as JSON, get it as text
-        const errorText = await openaiResponse.text()
-        console.error('OpenAI API error (non-JSON response):', errorText)
-        
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: 'AI analysis service error',
-            details: `HTTP ${openaiResponse.status}: ${errorText}` 
-          }),
-          { 
-            status: openaiResponse.status, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        )
+        // Try to parse as JSON first
+        errorDetails = await openaiResponse.json();
+        console.error('OpenAI API error (JSON):', errorDetails);
+      } catch (jsonParseError) {
+        // If JSON parsing fails, get as text
+        try {
+          errorText = await openaiResponse.text();
+          console.error('OpenAI API error (text):', errorText);
+        } catch (textError) {
+          console.error('Failed to read OpenAI error response:', textError);
+          errorText = 'Unable to read error response';
+        }
       }
       
-      console.error('OpenAI API error:', errorData)
-      
       // Handle specific OpenAI error types
-      let userFriendlyMessage = 'AI analysis service temporarily unavailable'
-      if (errorData.error?.code === 'insufficient_quota') {
-        userFriendlyMessage = 'AI analysis quota exceeded. Please check your OpenAI billing settings.'
-      } else if (errorData.error?.code === 'invalid_api_key') {
-        userFriendlyMessage = 'AI analysis service configuration error'
-      } else if (errorData.error?.code === 'rate_limit_exceeded') {
-        userFriendlyMessage = 'AI analysis service is busy. Please try again in a moment.'
+      let userFriendlyMessage = 'AI analysis service temporarily unavailable';
+      
+      if (errorDetails?.error?.code === 'insufficient_quota') {
+        userFriendlyMessage = 'AI analysis quota exceeded. Please check your OpenAI billing settings.';
+      } else if (errorDetails?.error?.code === 'invalid_api_key') {
+        userFriendlyMessage = 'AI analysis service configuration error';
+      } else if (errorDetails?.error?.code === 'rate_limit_exceeded') {
+        userFriendlyMessage = 'AI analysis service is busy. Please try again in a moment.';
+      } else if (openaiResponse.status === 429) {
+        userFriendlyMessage = 'AI analysis service rate limit exceeded. Please try again later.';
+      } else if (openaiResponse.status >= 500) {
+        userFriendlyMessage = 'AI analysis service is experiencing technical difficulties.';
       }
       
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: userFriendlyMessage,
-          details: errorData 
+          details: errorDetails || errorText || `HTTP ${openaiResponse.status}`,
+          statusCode: openaiResponse.status
         }),
         { 
-          status: openaiResponse.status, 
+          status: openaiResponse.status >= 500 ? 503 : 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
     }
 
-    // Parse OpenAI response
+    // Parse OpenAI response with robust error handling
+    let openaiData: any;
+    let rawResponseText: string;
+    
     try {
-      openaiData = await openaiResponse.json()
-    } catch (jsonError) {
-      console.error('Failed to parse OpenAI response as JSON:', jsonError)
-      const responseText = await openaiResponse.text()
-      console.error('Raw OpenAI response:', responseText)
+      rawResponseText = await openaiResponse.text();
+      console.log(`OpenAI response text length: ${rawResponseText.length}`);
+      
+      if (!rawResponseText || rawResponseText.trim() === '') {
+        throw new Error('Empty response from OpenAI API');
+      }
+      
+      openaiData = JSON.parse(rawResponseText);
+      console.log('Successfully parsed OpenAI response JSON');
+      
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', parseError);
+      console.error('Raw OpenAI response (first 500 chars):', rawResponseText?.substring(0, 500) || 'No response text');
       
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'Invalid response format from AI service',
-          details: 'Response was not valid JSON' 
+          details: `JSON parsing failed: ${parseError.message}`,
+          rawResponsePreview: rawResponseText?.substring(0, 200) || 'No response'
         }),
         { 
           status: 502, 
@@ -227,16 +271,15 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
       )
     }
     
-    console.log('OpenAI API response received successfully')
-
     // Validate OpenAI response structure
     if (!openaiData.choices || !Array.isArray(openaiData.choices) || openaiData.choices.length === 0) {
-      console.error('Invalid OpenAI response structure:', openaiData)
+      console.error('Invalid OpenAI response structure - missing choices:', openaiData);
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'Invalid response structure from AI service',
-          details: 'Missing or empty choices array' 
+          details: 'Missing or empty choices array',
+          responseStructure: Object.keys(openaiData || {})
         }),
         { 
           status: 502, 
@@ -245,14 +288,15 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
       )
     }
 
-    const messageContent = openaiData.choices[0]?.message?.content
+    const messageContent = openaiData.choices[0]?.message?.content;
     if (!messageContent) {
-      console.error('No message content in OpenAI response:', openaiData)
+      console.error('No message content in OpenAI response:', openaiData);
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'Empty response from AI service',
-          details: 'No message content received' 
+          details: 'No message content received',
+          choicesLength: openaiData.choices?.length || 0
         }),
         { 
           status: 502, 
@@ -261,33 +305,60 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
       )
     }
 
-    // Parse the AI response content
-    let analysisResult: Partial<AIBatchAnalysis>
+    // Parse the AI response content with robust error handling
+    let analysisResult: AIBatchAnalysis;
+    
     try {
-      const aiContent = JSON.parse(messageContent)
+      console.log(`Parsing AI message content (length: ${messageContent.length})`);
+      console.log('AI message content preview:', messageContent.substring(0, 200));
+      
+      const aiContent = JSON.parse(messageContent);
       
       // Validate the parsed content structure
+      if (!aiContent || typeof aiContent !== 'object') {
+        throw new Error('AI response is not a valid object');
+      }
+      
       if (!aiContent.ingredients || !Array.isArray(aiContent.ingredients)) {
-        console.error('Invalid AI content structure - missing ingredients array:', aiContent)
-        throw new Error('AI response missing required ingredients array')
+        console.error('Invalid AI content structure - missing ingredients array:', aiContent);
+        throw new Error('AI response missing required ingredients array');
+      }
+      
+      // Validate each ingredient analysis
+      for (let i = 0; i < aiContent.ingredients.length; i++) {
+        const ingredient = aiContent.ingredients[i];
+        if (!ingredient.ingredient || !ingredient.safetyRating || !ingredient.reasoning) {
+          console.error(`Invalid ingredient analysis at index ${i}:`, ingredient);
+          throw new Error(`Incomplete ingredient analysis for item ${i + 1}`);
+        }
+        
+        // Validate safety rating values
+        if (!['safe', 'caution', 'avoid'].includes(ingredient.safetyRating)) {
+          console.error(`Invalid safety rating "${ingredient.safetyRating}" for ingredient:`, ingredient);
+          ingredient.safetyRating = 'caution'; // Default to caution for invalid ratings
+        }
       }
       
       analysisResult = {
-        ingredients: aiContent.ingredients || [],
+        ingredients: aiContent.ingredients,
         overallAssessment: aiContent.overallAssessment || 'Analysis completed',
-        keyFindings: aiContent.keyFindings || [],
-        recommendations: aiContent.recommendations || [],
+        keyFindings: Array.isArray(aiContent.keyFindings) ? aiContent.keyFindings : [],
+        recommendations: Array.isArray(aiContent.recommendations) ? aiContent.recommendations : [],
         processingTime: Date.now() - startTime
-      }
-    } catch (parseError) {
-      console.error('Failed to parse AI response content:', parseError)
-      console.error('Raw AI message content:', messageContent)
+      };
+      
+      console.log(`Successfully parsed ${analysisResult.ingredients.length} ingredient analyses`);
+      
+    } catch (contentParseError) {
+      console.error('Failed to parse AI response content:', contentParseError);
+      console.error('Raw AI message content:', messageContent);
       
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'Invalid AI analysis format',
-          details: `Failed to parse AI response: ${parseError.message}` 
+          details: `Failed to parse AI response: ${contentParseError.message}`,
+          contentPreview: messageContent.substring(0, 300)
         }),
         { 
           status: 502, 
@@ -296,27 +367,28 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
       )
     }
 
-    // Validate that we have analysis for all ingredients
-    if (analysisResult.ingredients!.length !== ingredients.length) {
-      console.warn(`Expected ${ingredients.length} analyses, got ${analysisResult.ingredients!.length}. Some ingredients may not have been analyzed.`)
-      
-      // If we got significantly fewer results than expected, return an error
-      if (analysisResult.ingredients!.length === 0) {
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: 'AI analysis returned no results',
-            details: 'No ingredient analyses were returned by the AI service' 
-          }),
-          { 
-            status: 502, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        )
-      }
+    // Final validation - ensure we have analysis for all requested ingredients
+    if (analysisResult.ingredients.length === 0) {
+      console.error('AI analysis returned no ingredient analyses');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'AI analysis returned no results',
+          details: 'No ingredient analyses were returned by the AI service' 
+        }),
+        { 
+          status: 502, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
     }
 
-    console.log(`AI analysis completed successfully. Processing time: ${analysisResult.processingTime}ms`)
+    if (analysisResult.ingredients.length < ingredients.length) {
+      console.warn(`Expected ${ingredients.length} analyses, got ${analysisResult.ingredients.length}`);
+      // Continue anyway - partial results are better than no results
+    }
+
+    console.log(`AI analysis completed successfully. Processing time: ${analysisResult.processingTime}ms`);
 
     return new Response(
       JSON.stringify({ 
@@ -330,14 +402,15 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
     )
 
   } catch (error) {
-    console.error('AI Analysis Edge Function error:', error)
+    console.error('Unexpected error in AI Analysis Edge Function:', error);
     
     return new Response(
       JSON.stringify({ 
         success: false, 
         error: 'Internal server error',
         details: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        processingTime: Date.now() - startTime
       }),
       { 
         status: 500, 
