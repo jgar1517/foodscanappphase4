@@ -676,13 +676,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sourceTag: {
-    backgroundColor: '#e5e7eb',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    marginRight: 8,
   },
   sourceText: {
-    fontSize: 10,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '600',
   },
