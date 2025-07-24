@@ -207,69 +207,69 @@ export default function ScanScreen() {
       end={{ x: 1, y: 1 }}
     >
       <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Scan Ingredient Label</Text>
-        <Text style={styles.headerSubtitle}>
-          Position the ingredient label within the frame for best results
-        </Text>
-      </View>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Scan Ingredient Label</Text>
+          <Text style={styles.headerSubtitle}>
+            Position the ingredient label within the frame for best results
+          </Text>
+        </View>
 
-      <View style={styles.cameraContainer}>
-        <CameraView
-          ref={cameraRef}
-          style={styles.camera}
-          facing={facing}
-        >
-          <View style={styles.overlay}>
-            <View style={styles.scanFrame}>
-              <View style={[styles.corner, styles.topLeft]} />
-              <View style={[styles.corner, styles.topRight]} />
-              <View style={[styles.corner, styles.bottomLeft]} />
-              <View style={[styles.corner, styles.bottomRight]} />
+        <View style={styles.cameraContainer}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            facing={facing}
+          >
+            <View style={styles.overlay}>
+              <View style={styles.scanFrame}>
+                <View style={[styles.corner, styles.topLeft]} />
+                <View style={[styles.corner, styles.topRight]} />
+                <View style={[styles.corner, styles.bottomLeft]} />
+                <View style={[styles.corner, styles.bottomRight]} />
+              </View>
+              
+              <View style={styles.scanInstruction}>
+                <Text style={styles.scanInstructionText}>
+                  Align ingredient label within the frame
+                </Text>
+              </View>
             </View>
-            
-            <View style={styles.scanInstruction}>
-              <Text style={styles.scanInstructionText}>
-                Align ingredient label within the frame
-              </Text>
-            </View>
-          </View>
-        </CameraView>
-      </View>
+          </CameraView>
+        </View>
 
-      <View style={styles.controls}>
-        <TouchableOpacity 
-          style={styles.controlButton}
-          onPress={pickImage}
-        >
-          <ImageIcon size={24} color="#10b981" />
-          <Text style={styles.controlButtonText}>Gallery</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.captureButton}
-          onPress={takePicture}
-        >
-          <View style={styles.captureButtonInner} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.controlButton}
-          onPress={toggleCameraFacing}
-        >
-          <FlipHorizontal size={24} color="#10b981" />
-          <Text style={styles.controlButtonText}>Flip</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.controls}>
+          <TouchableOpacity 
+            style={styles.controlButton}
+            onPress={pickImage}
+          >
+            <ImageIcon size={24} color="#10b981" />
+            <Text style={styles.controlButtonText}>Gallery</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.captureButton}
+            onPress={takePicture}
+          >
+            <View style={styles.captureButtonInner} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.controlButton}
+            onPress={toggleCameraFacing}
+          >
+            <FlipHorizontal size={24} color="#10b981" />
+            <Text style={styles.controlButtonText}>Flip</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.tips}>
-        <Text style={styles.tipsTitle}>Tips for Better Results:</Text>
-        <Text style={styles.tipsText}>
-          • Ensure good lighting and clear focus{'\n'}
-          • Keep the label flat and avoid shadows{'\n'}
-          • Make sure all text is visible in the frame
-        </Text>
-      </View>
+        <View style={styles.tips}>
+          <Text style={styles.tipsTitle}>Tips for Better Results:</Text>
+          <Text style={styles.tipsText}>
+            • Ensure good lighting and clear focus{'\n'}
+            • Keep the label flat and avoid shadows{'\n'}
+            • Make sure all text is visible in the frame
+          </Text>
+        </View>
       </SafeAreaView>
     </LinearGradient>
   );
