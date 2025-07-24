@@ -52,7 +52,6 @@ export default function ScanScreen() {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-    </LinearGradient>
     );
   }
 
@@ -197,24 +196,11 @@ export default function ScanScreen() {
           </View>
         </View>
       </SafeAreaView>
-    </LinearGradient>
     );
   }
 
   return (
     <LinearGradient
-      colors={['#201A40', '#302860']}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <SafeAreaView style={styles.safeArea}>
-      colors={['#201A40', '#302860']}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <SafeAreaView style={styles.safeArea}>
       colors={['#201A40', '#302860']}
       style={styles.container}
       start={{ x: 0, y: 0 }}
@@ -284,6 +270,7 @@ export default function ScanScreen() {
           • Make sure all text is visible in the frame
         </Text>
       </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
