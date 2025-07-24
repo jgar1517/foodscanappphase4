@@ -116,38 +116,87 @@ Base your analysis on:
 Be conservative with safety ratings - when in doubt, use "caution" rather than "safe".`
 
     // Call OpenAI API
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini', // Using the more cost-effective model
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a food safety expert and nutritionist. Provide accurate, science-based ingredient analysis in the requested JSON format.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.3, // Lower temperature for more consistent results
-        max_tokens: 3000,
-        response_format: { type: 'json_object' }
-      }),
-    })
+    let openaiResponse: Response
+    let openaiData: any
+    
+    try {
+      openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini', // Using the more cost-effective model
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a food safety expert and nutritionist. Provide accurate, science-based ingredient analysis in the requested JSON format.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.3, // Lower temperature for more consistent results
+          max_tokens: 3000,
+          response_format: { type: 'json_object' }
+        }),
+      })
+    } catch (fetchError) {
+      console.error('Failed to call OpenAI API:', fetchError)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Failed to connect to AI analysis service',
+          details: fetchError.message 
+        }),
+        { 
+          status: 503, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
 
+    // Check if OpenAI API request was successful
     if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.json()
+      let errorData: any
+      try {
+        errorData = await openaiResponse.json()
+      } catch (jsonError) {
+        // If we can't parse the error response as JSON, get it as text
+        const errorText = await openaiResponse.text()
+        console.error('OpenAI API error (non-JSON response):', errorText)
+        
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'AI analysis service error',
+            details: `HTTP ${openaiResponse.status}: ${errorText}` 
+          }),
+          { 
+            status: openaiResponse.status, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+      
       console.error('OpenAI API error:', errorData)
+      
+      // Handle specific OpenAI error types
+      let userFriendlyMessage = 'AI analysis service temporarily unavailable'
+      if (errorData.error?.code === 'insufficient_quota') {
+        userFriendlyMessage = 'AI analysis quota exceeded. Please check your OpenAI billing settings.'
+      } else if (errorData.error?.code === 'invalid_api_key') {
+        userFriendlyMessage = 'AI analysis service configuration error'
+      } else if (errorData.error?.code === 'rate_limit_exceeded') {
+        userFriendlyMessage = 'AI analysis service is busy. Please try again in a moment.'
+      }
       
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'AI analysis service temporarily unavailable',
+          error: userFriendlyMessage,
           details: errorData 
         }),
         { 
@@ -157,13 +206,72 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
       )
     }
 
-    const openaiData = await openaiResponse.json()
-    console.log('OpenAI API response received')
+    // Parse OpenAI response
+    try {
+      openaiData = await openaiResponse.json()
+    } catch (jsonError) {
+      console.error('Failed to parse OpenAI response as JSON:', jsonError)
+      const responseText = await openaiResponse.text()
+      console.error('Raw OpenAI response:', responseText)
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid response format from AI service',
+          details: 'Response was not valid JSON' 
+        }),
+        { 
+          status: 502, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+    
+    console.log('OpenAI API response received successfully')
 
-    // Parse the AI response
+    // Validate OpenAI response structure
+    if (!openaiData.choices || !Array.isArray(openaiData.choices) || openaiData.choices.length === 0) {
+      console.error('Invalid OpenAI response structure:', openaiData)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid response structure from AI service',
+          details: 'Missing or empty choices array' 
+        }),
+        { 
+          status: 502, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    const messageContent = openaiData.choices[0]?.message?.content
+    if (!messageContent) {
+      console.error('No message content in OpenAI response:', openaiData)
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Empty response from AI service',
+          details: 'No message content received' 
+        }),
+        { 
+          status: 502, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    // Parse the AI response content
     let analysisResult: Partial<AIBatchAnalysis>
     try {
-      const aiContent = JSON.parse(openaiData.choices[0].message.content)
+      const aiContent = JSON.parse(messageContent)
+      
+      // Validate the parsed content structure
+      if (!aiContent.ingredients || !Array.isArray(aiContent.ingredients)) {
+        console.error('Invalid AI content structure - missing ingredients array:', aiContent)
+        throw new Error('AI response missing required ingredients array')
+      }
+      
       analysisResult = {
         ingredients: aiContent.ingredients || [],
         overallAssessment: aiContent.overallAssessment || 'Analysis completed',
@@ -172,13 +280,40 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
         processingTime: Date.now() - startTime
       }
     } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError)
-      throw new Error('Invalid AI response format')
+      console.error('Failed to parse AI response content:', parseError)
+      console.error('Raw AI message content:', messageContent)
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid AI analysis format',
+          details: `Failed to parse AI response: ${parseError.message}` 
+        }),
+        { 
+          status: 502, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
     }
 
     // Validate that we have analysis for all ingredients
     if (analysisResult.ingredients!.length !== ingredients.length) {
-      console.warn(`Expected ${ingredients.length} analyses, got ${analysisResult.ingredients!.length}`)
+      console.warn(`Expected ${ingredients.length} analyses, got ${analysisResult.ingredients!.length}. Some ingredients may not have been analyzed.`)
+      
+      // If we got significantly fewer results than expected, return an error
+      if (analysisResult.ingredients!.length === 0) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'AI analysis returned no results',
+            details: 'No ingredient analyses were returned by the AI service' 
+          }),
+          { 
+            status: 502, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
     }
 
     console.log(`AI analysis completed successfully. Processing time: ${analysisResult.processingTime}ms`)
@@ -201,7 +336,8 @@ Be conservative with safety ratings - when in doubt, use "caution" rather than "
       JSON.stringify({ 
         success: false, 
         error: 'Internal server error',
-        details: error.message 
+        details: error.message,
+        timestamp: new Date().toISOString()
       }),
       { 
         status: 500, 
