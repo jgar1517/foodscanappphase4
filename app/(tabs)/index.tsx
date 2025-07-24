@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   },
   finalCTASubtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#e5e7eb',
     textAlign: 'center',
     marginBottom: 24,
   },
