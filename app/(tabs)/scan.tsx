@@ -328,21 +328,21 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   header: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1a1a2e',
     paddingHorizontal: 24,
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   cameraContainer: {
     flex: 1,
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
     paddingVertical: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1a1a2e',
   },
   controlButton: {
     alignItems: 'center',
@@ -449,21 +449,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#10b981',
   },
   tips: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#16213e',
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   tipsTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#ffffff',
     marginBottom: 8,
   },
   tipsText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.7)',
     lineHeight: 16,
   },
   previewContainer: {
