@@ -117,15 +117,18 @@ class OCRService {
 
   /**
    * Processes raw OCR text to extract a list of ingredients.
-   * This is a simplified parser and can be greatly enhanced with NLP.
+   * Enhanced parser with better filtering and text cleaning.
    */
   async processIngredientsFromText(ocrResult: OCRResult): Promise<ProcessedIngredients> {
     const startTime = Date.now();
     const rawText = ocrResult.text;
     let ingredients: string[] = [];
 
-    // Simple heuristic: look for common ingredient list indicators
-    const ingredientKeywords = ['ingredients:', 'ingredientes:', 'contains:', 'composition:'];
+    // Enhanced heuristic: look for common ingredient list indicators
+    const ingredientKeywords = [
+      'ingredients:', 'ingredientes:', 'contains:', 'composition:', 
+      'made with:', 'made from:', 'ingrédients:', 'contiene:'
+    ];
     let startIndex = -1;
 
     for (const keyword of ingredientKeywords) {
@@ -140,7 +143,13 @@ class OCRService {
       let ingredientListText = rawText.substring(startIndex).trim();
 
       // Remove common trailing text that is not part of ingredients
-      const stopKeywords = ['nutrition facts', 'nutritional information', 'allergens', 'allergy information', 'directions', 'serving suggestion'];
+      const stopKeywords = [
+        'nutrition facts', 'nutritional information', 'allergens', 'allergy information', 
+        'directions', 'serving suggestion', 'distributed by', 'manufactured by',
+        'best by', 'use by', 'expiration', 'exp', 'lot', 'upc', 'net wt',
+        'calories', 'protein', 'carbohydrates', 'fat', 'sodium', 'sugar',
+        'vitamin', 'mineral', 'daily value', '%dv', 'serving size'
+      ];
       for (const keyword of stopKeywords) {
         const index = ingredientListText.toLowerCase().indexOf(keyword);
         if (index !== -1) {
@@ -149,29 +158,17 @@ class OCRService {
         }
       }
 
-      // Split by common delimiters (commas, periods, semicolons, new lines)
+      // Split by common delimiters and clean up
       ingredients = ingredientListText
         .split(/[,.;\n]/)
-        .map(item => item.replace(/[\(\)\[\]]/g, '').trim()) // Remove parentheses/brackets
-        .filter(item => item.length > 2 && !/^\d+$/.test(item)) // Filter out very short items or numbers
+        .map(item => this.cleanIngredientText(item))
+        .filter(item => this.isValidIngredient(item))
         .filter((value, index, self) => self.indexOf(value) === index); // Remove duplicates
     } else {
-      // If no clear ingredient list found, try to extract common food terms
-      // This is a very basic fallback.
-      const commonFoodTerms = ['sugar', 'salt', 'water', 'flour', 'oil', 'milk', 'egg', 'corn', 'soy', 'wheat', 'rice', 'acid', 'flavor', 'color'];
-      ingredients = rawText.split(/\s+/)
-        .map(word => word.toLowerCase().replace(/[^a-z]/g, ''))
-        .filter(word => commonFoodTerms.includes(word))
-        .filter((value, index, self) => self.indexOf(value) === index);
+      // If no clear ingredient list found, return empty array
+      // Better to return nothing than incorrect data
+      ingredients = [];
     }
-
-    // Further clean and refine ingredients (e.g., remove numbers, symbols, common packaging terms)
-    ingredients = ingredients.map(ing => 
-      ing.replace(/\b(g|mg|mcg|iu|kcal|kj|oz|lb|ml|l)\b/gi, '') // Remove units
-         .replace(/\d+(\.\d+)?%?/g, '') // Remove percentages and numbers
-         .replace(/[\*\+\-–—]/g, '') // Remove common bullet/dash characters
-         .trim()
-    ).filter(ing => ing.length > 2); // Filter again after cleaning
 
     return {
       ingredients: ingredients,
@@ -179,6 +176,58 @@ class OCRService {
       confidence: ocrResult.confidence,
       processingTime: Date.now() - startTime,
     };
+  }
+
+  /**
+   * Clean individual ingredient text
+   */
+  private cleanIngredientText(text: string): string {
+    return text
+      .replace(/[\(\)\[\]]/g, '') // Remove parentheses/brackets
+      .replace(/\b(g|mg|mcg|iu|kcal|kj|oz|lb|ml|l)\b/gi, '') // Remove units
+      .replace(/\d+(\.\d+)?%?/g, '') // Remove percentages and numbers
+      .replace(/[\*\+\-–—]/g, '') // Remove common bullet/dash characters
+      .replace(/\b(and|or|with|contains|may contain)\b/gi, '') // Remove connecting words
+      .trim();
+  }
+
+  /**
+   * Validate if text is likely a real ingredient
+   */
+  private isValidIngredient(text: string): boolean {
+    if (!text || text.length < 2) return false;
+    
+    // Filter out pure numbers
+    if (/^\d+$/.test(text)) return false;
+    
+    // Filter out common non-ingredient words
+    const nonIngredientWords = [
+      'nutrition', 'facts', 'information', 'label', 'product', 'brand',
+      'company', 'inc', 'llc', 'corp', 'ltd', 'usa', 'america',
+      'distributed', 'manufactured', 'packaged', 'processed',
+      'best', 'use', 'exp', 'date', 'lot', 'code', 'upc', 'barcode',
+      'calories', 'protein', 'carbs', 'fat', 'fiber', 'serving',
+      'size', 'weight', 'net', 'gross', 'total', 'per', 'daily',
+      'value', 'percent', 'vitamin', 'mineral', 'supplement',
+      'warning', 'caution', 'allergen', 'gluten', 'dairy', 'soy',
+      'keep', 'store', 'refrigerate', 'freeze', 'room', 'temperature'
+    ];
+    
+    const lowerText = text.toLowerCase();
+    if (nonIngredientWords.some(word => lowerText === word || lowerText.includes(word))) {
+      return false;
+    }
+    
+    // Filter out text that looks like nutritional info
+    if (/\d+\s*(cal|kcal|mg|g|oz|lb|ml|l)/.test(lowerText)) return false;
+    
+    // Filter out URLs, emails, phone numbers
+    if (/(www\.|http|@|\.com|\.org|\d{3}-\d{3}-\d{4})/.test(lowerText)) return false;
+    
+    // Must contain at least one letter
+    if (!/[a-zA-Z]/.test(text)) return false;
+    
+    return true;
   }
 }
 
